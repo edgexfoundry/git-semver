@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/edgexfoundry/git-semver/scope"
+	"github.com/dweomer/git-semver/scope"
 )
 
 var (

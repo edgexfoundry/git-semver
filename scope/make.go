@@ -43,7 +43,7 @@ func BumpFinal() MakeOpt {
 	}
 }
 
-// BumpMajor will bump the major axis.
+// BumpMajor will bump the major axis, rolling the minor and patch axes to zero and stripping the pre-release suffix.
 func BumpMajor() MakeOpt {
 	return func(v *Version) error {
 		v.Major++
@@ -54,7 +54,7 @@ func BumpMajor() MakeOpt {
 	}
 }
 
-// BumpMinor will bump the minor axis.
+// BumpMinor will bump the minor axis, rolling the patch axis to zero and stripping the pre-release suffix.
 func BumpMinor() MakeOpt {
 	return func(v *Version) error {
 		v.Minor++
@@ -64,7 +64,7 @@ func BumpMinor() MakeOpt {
 	}
 }
 
-// BumpPatch will bump the patch axis.
+// BumpPatch will bump the patch axis and strip the pre-release suffix.
 func BumpPatch() MakeOpt {
 	return func(v *Version) error {
 		v.Patch++
@@ -73,7 +73,7 @@ func BumpPatch() MakeOpt {
 	}
 }
 
-// BumpPre will bump the pre-release suffix.
+// BumpPre will bump the pre-release suffix, rolling from zero if no pre-release version is set.
 // Passing a different prefix than what is currently encoded will bump from zero with the new pre-release.
 func BumpPre(pre string) MakeOpt {
 	return func(v *Version) error {
@@ -92,7 +92,7 @@ func BumpPre(pre string) MakeOpt {
 	}
 }
 
-// WithPre does nothing for empty prefixes and works like BumpPre otherwise.
+// WithPre does nothing for empty pre-release prefixes and works like BumpPre otherwise.
 func WithPre(pre string) MakeOpt {
 	if pre != "" {
 		return BumpPre(pre)
@@ -104,7 +104,7 @@ func WithPre(pre string) MakeOpt {
 
 // WithBuild attaches build/metadata to the version string.
 func WithBuild(s string) MakeOpt {
-	return func(v *semver.Version) error {
+	return func(v *Version) error {
 		v.Build = strings.Split(s, ".")
 		return nil
 	}

@@ -1,4 +1,4 @@
-module github.com/edgexfoundry/git-semver
+module github.com/dweomer/git-semver
 
 require (
 	github.com/blang/semver v3.5.1+incompatible

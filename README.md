@@ -1,4 +1,8 @@
+
 # `git semver`
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/edgexfoundry/git-semver)](https://goreportcard.com/report/github.com/edgexfoundry/git-semver)
+[![Go Doc](https://godoc.org/github.com/edgexfoundry/git-semver?status.svg)](https://godoc.org/github.com/edgexfoundry/git-semver)
 
 Create and manage a `.semver` directory right next to your `.git` directory, for all of your [Semantic Versioning][semver-web] needs.
 

@@ -50,7 +50,7 @@ For example, if currently on the `master` branch and the value returned by `git 
 
 Attempt to tag the current HEAD with a tag that is effectively `v$(git semver)`. This will fail if `git-semver` detects a tag on the current HEAD that can be parsed as a Semantic Version.
 
-### `git semver -push`
+### `git semver push`
 
 Push `semver` branch commits to the remote. Also push tags _from the current repo_ that match the ref-spec `refs/tags/v*:refs/tags/v*`.
 

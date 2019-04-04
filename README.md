@@ -6,6 +6,8 @@
 
 Create and manage a `.semver` directory right next to your `.git` directory, for all of your [Semantic Versioning][semver-web] needs.
 
+[![asciicast](https://asciinema.org/a/238944.svg?autoplay=1)](https://asciinema.org/a/238944)
+
 ## Installation
 
 ### Go

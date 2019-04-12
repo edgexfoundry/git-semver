@@ -83,32 +83,6 @@ func Init(my *Extent, create bool) (*Extent, error) {
 			if sv.Tree, err = sv.Repo.Worktree(); err != nil {
 				return nil, err
 			}
-			if err = WriteVersion(my, sv, Version{}); err != nil {
-				return nil, err
-			}
-			var (
-				svrem *git.Remote
-			)
-			svrem, err = sv.Repo.CreateRemote(&config.RemoteConfig{
-				Name: RemoteName,
-				URLs: []string{myurl},
-				Fetch: []config.RefSpec{
-					config.RefSpec(fmt.Sprintf("+%s:%s", svbrn, svrrn)),
-				},
-			})
-			if err != nil {
-				return nil, err
-			}
-			log.Printf("# git push %s semver", svrem.Config().URLs[0])
-			err = sv.Repo.Push(&git.PushOptions{
-				RemoteName: svrem.Config().Name,
-				RefSpecs: []config.RefSpec{
-					config.DefaultPushRefSpec,
-				},
-			})
-			if err != nil {
-				return nil, err
-			}
 			sv.Repo.DeleteRemote(RemoteName)
 		}
 		log.Printf("# '%s' -> '%s'", svtmp, svwkt)
@@ -122,17 +96,26 @@ func Init(my *Extent, create bool) (*Extent, error) {
 		}
 		sv, err = Open(svwkt)
 	}
-	if err == nil {
-		log.Printf("# $SEMVER_DIR = %s", sv.Tree.Filesystem.Root())
-		if myo, mye := my.Repo.Remote(RemoteName); mye == nil && myo != nil {
-			sv.Repo.CreateRemote(&config.RemoteConfig{
-				Name: myo.Config().Name,
-				URLs: myo.Config().URLs,
-				Fetch: []config.RefSpec{
-					config.RefSpec(fmt.Sprintf("+%s:%s", svbrn, svrrn)),
-				},
-			})
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = ReadVersion(my, sv); create && err != nil {
+		if err = WriteVersion(my, sv, Version{}); err != nil { // TODO: pick a better initial version than 0.0.0
+			return nil, err
 		}
 	}
-	return sv, err
+
+	log.Printf("# $SEMVER_DIR = %s", sv.Tree.Filesystem.Root())
+	if myo, mye := my.Repo.Remote(RemoteName); mye == nil && myo != nil {
+		sv.Repo.CreateRemote(&config.RemoteConfig{
+			Name: myo.Config().Name,
+			URLs: myo.Config().URLs,
+			Fetch: []config.RefSpec{
+				config.RefSpec(fmt.Sprintf("+%s:%s", svbrn, svrrn)),
+			},
+		})
+	}
+
+	return sv, nil
 }

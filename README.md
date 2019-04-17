@@ -1,5 +1,5 @@
 
-# `git semver`
+# GIT SemVer
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/edgexfoundry/git-semver)](https://goreportcard.com/report/github.com/edgexfoundry/git-semver)
 [![Go Doc](https://godoc.org/github.com/edgexfoundry/git-semver?status.svg)](https://godoc.org/github.com/edgexfoundry/git-semver)

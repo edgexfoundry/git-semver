@@ -11,7 +11,7 @@ import (
 
 // Push the semver branch and any tags to the remote.
 func Push(my, sv *Extent) error {
-	err := sv.Repo.Push(&git.PushOptions{
+	var err = sv.Repo.Push(&git.PushOptions{
 		RemoteName: RemoteName,
 		RefSpecs: []config.RefSpec{
 			config.RefSpec("refs/heads/semver:refs/heads/semver"),

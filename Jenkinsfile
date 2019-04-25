@@ -158,7 +158,7 @@ def dockerPush(arch, image) {
     }
     versions << 'latest'
     for (ver in versions) {
-        docker.withRegistry("https://nexus3.edgexfoundry.org:10002", 'git-semver') {
+        docker.withRegistry("https://${env.DOCKER_REGISTRY}:10004", 'git-semver') {
             img.push("${ver}-${arch}")
             img.push("${ver}-${mach}")
         }

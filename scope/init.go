@@ -35,17 +35,18 @@ func Init(my *Extent, create bool) (*Extent, error) {
 	log.Printf("# $SEMVER_USER_EMAIL = %s", UserEmail)
 	log.Printf("# $SEMVER_USER_NAME = %s", UserName)
 
-	if my.Branch == "" {
-		my.Branch = os.Getenv("SEMVER_BRANCH")
-	}
-	if my.Branch == "" {
-		my.Branch = os.Getenv("GIT_BRANCH")
-	}
-	if my.Branch == "" {
-		my.Branch = os.Getenv("BRANCH_NAME")
-	}
-	if my.Branch == "" {
-		return nil, fmt.Errorf("unable to determine current branch")
+	if b, ok := os.LookupEnv("SEMVER_BRANCH"); ok {
+		if b != "" {
+			my.Branch = b
+		}
+	} else if b, ok := os.LookupEnv("GIT_BRANCH"); ok {
+		if b != "" {
+			my.Branch = b
+		}
+	} else if b, ok := os.LookupEnv("BRANCH_NAME"); ok {
+		if b != "" {
+			my.Branch = b
+		}
 	}
 	log.Printf("# $SEMVER_BRANCH = %s", my.Branch)
 

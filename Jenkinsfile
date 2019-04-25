@@ -59,7 +59,9 @@ pipeline {
         }
         stage('Docker Push') {
             when {
-                branch 'master'
+                expression {
+                    edgex.isReleaseStream()
+                }
             }
             parallel {
                 stage('push-amd64') {
@@ -82,7 +84,9 @@ pipeline {
         }
         stage('SemVer Tag ➡️ Bump ➡️ Push') {
             when {
-                branch 'master'
+                expression {
+                    edgex.isReleaseStream()
+                }
             }
             steps {
                 unstash 'semver'

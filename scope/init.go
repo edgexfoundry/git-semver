@@ -48,6 +48,9 @@ func Init(my *Extent, create bool) (*Extent, error) {
 			my.Branch = b
 		}
 	}
+	if my.Branch == "" {
+		return nil, fmt.Errorf("unable to determine current branch")
+	}
 	log.Printf("# $SEMVER_BRANCH = %s", my.Branch)
 
 	if myrem, err := my.Repo.Remote(RemoteName); err == nil {

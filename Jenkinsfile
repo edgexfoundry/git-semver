@@ -26,6 +26,7 @@ pipeline {
     stages {
         stage('Prepare') {
             steps {
+                edgeXSetupEnvironment()
                 edgeXDockerLogin(settingsFile: env.MVN_SETTINGS)
             }
         }
@@ -92,7 +93,7 @@ pipeline {
                 unstash 'semver'
                 doSemver('amd64', 'edgexfoundry/git-semver') {
                     sh 'git semver tag'
-                    sh 'git semver bump pre'
+                    sh 'git semver bump patch'
                     sh 'git semver push'
                 }
             }
@@ -114,7 +115,8 @@ def doBuild(arch, image='edgexfoundry/git-semver') {
 def doPush(arch, image='edgexfoundry/git-semver') {
     unstash 'semver'
     dockerLoad(arch, image)
-    dockerPush(arch, image)
+    dockerPush(arch, image, "https://${env.DOCKER_REGISTRY}:10004")
+    // dockerPush(arch, image, "https://${env.DOCKERHUB_REGISTRY}")
 }
 
 def doSemver(arch, image, body) {
@@ -147,7 +149,7 @@ def dockerLoad(arch, image) {
     sh "docker image load --input ${arch}.tar"
 }
 
-def dockerPush(arch, image) {
+def dockerPush(arch, image, registry) {
     sh 'env | sort'
     def img = docker.image("${image}:${arch}")
     def mach = readFile("${arch}.txt").trim()
@@ -158,7 +160,7 @@ def dockerPush(arch, image) {
     }
     versions << 'latest'
     for (ver in versions) {
-        docker.withRegistry("https://${env.DOCKER_REGISTRY}:10004", 'git-semver') {
+        docker.withRegistry(registry) {
             img.push("${ver}-${arch}")
             img.push("${ver}-${mach}")
         }

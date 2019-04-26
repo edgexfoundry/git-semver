@@ -160,7 +160,7 @@ def dockerPush(arch, image, registry) {
     }
     versions << 'latest'
     for (ver in versions) {
-        docker.withRegistry(registry) {
+        docker.withRegistry(registry, 'git-semver') {
             img.push("${ver}-${arch}")
             img.push("${ver}-${mach}")
         }

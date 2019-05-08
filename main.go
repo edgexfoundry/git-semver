@@ -101,6 +101,8 @@ func main() {
 	}
 	if sv, err = scope.Init(my, _init.Parsed()); err != nil {
 		log.Fatalf("%s: %v", cmd, err)
+	} else if _init.Parsed() {
+		return
 	}
 
 	switch {
@@ -121,10 +123,12 @@ func main() {
 		if err = scope.Tag(my, sv); err != nil {
 			log.Fatalf("%s: %v", cmd, err)
 		}
-		// do 'git-semver push'
 	case _push.Parsed():
+		// do 'git-semver push'
+		cmd = _push.Name()
+
 		if err = scope.Push(my, sv); err != nil {
-			log.Fatalf("%s: %v", cmd, fmt.Errorf("failed to push: %v", err))
+			log.Fatalf("%s: %v", cmd, err)
 		}
 	default:
 		if ver, err := scope.ReadVersion(my, sv); err != nil {

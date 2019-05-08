@@ -5,10 +5,25 @@
 package scope
 
 import (
+	"errors"
 	"strings"
 	"unicode"
 
 	"github.com/blang/semver"
+)
+
+var (
+	// ErrBumpMajorOverflow when the major axis resets to zero
+	ErrBumpMajorOverflow = errors.New("bump overflow: major")
+
+	// ErrBumpMinorOverflow when the minor axis resets to zero
+	ErrBumpMinorOverflow = errors.New("bump overflow: minor")
+
+	// ErrBumpPatchOverflow when the patch axis resets to zero
+	ErrBumpPatchOverflow = errors.New("bump overflow: patch")
+
+	// ErrBumpPRVerOverflow when the pre-release version resets to zero
+	ErrBumpPRVerOverflow = errors.New("bump overflow: pre-release version")
 )
 
 // MakeOpt is an option passed to MakeVersion
@@ -46,7 +61,11 @@ func BumpFinal() MakeOpt {
 // BumpMajor will bump the major axis, rolling the minor and patch axes to zero and stripping the pre-release suffix.
 func BumpMajor() MakeOpt {
 	return func(v *Version) error {
-		v.Major++
+		x := v.Major + 1
+		if x == 0 {
+			return ErrBumpMajorOverflow
+		}
+		v.Major = x
 		v.Minor = 0
 		v.Patch = 0
 		v.Pre = nil
@@ -57,7 +76,11 @@ func BumpMajor() MakeOpt {
 // BumpMinor will bump the minor axis, rolling the patch axis to zero and stripping the pre-release suffix.
 func BumpMinor() MakeOpt {
 	return func(v *Version) error {
-		v.Minor++
+		x := v.Minor + 1
+		if x == 0 {
+			return ErrBumpMinorOverflow
+		}
+		v.Minor = x
 		v.Patch = 0
 		v.Pre = nil
 		return nil
@@ -67,7 +90,11 @@ func BumpMinor() MakeOpt {
 // BumpPatch will bump the patch axis and strip the pre-release suffix.
 func BumpPatch() MakeOpt {
 	return func(v *Version) error {
-		v.Patch++
+		x := v.Patch + 1
+		if x == 0 {
+			return ErrBumpPatchOverflow
+		}
+		v.Patch = x
 		v.Pre = nil
 		return nil
 	}
@@ -82,10 +109,12 @@ func BumpPre(pre string) MakeOpt {
 				{VersionStr: pre},
 				{VersionNum: 1, IsNum: true},
 			}
+		} else if x := v.Pre[1].VersionNum + 1; x == 0 {
+			return ErrBumpPRVerOverflow
 		} else {
 			v.Pre = []semver.PRVersion{
 				{VersionStr: pre},
-				{VersionNum: v.Pre[1].VersionNum + 1, IsNum: true},
+				{VersionNum: x, IsNum: true},
 			}
 		}
 		return nil

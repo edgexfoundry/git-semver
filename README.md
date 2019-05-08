@@ -1,5 +1,5 @@
 
-# `git semver`
+# GIT SemVer
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/dweomer/git-semver)](https://goreportcard.com/report/github.com/dweomer/git-semver)
 [![Go Doc](https://godoc.org/github.com/dweomer/git-semver?status.svg)](https://godoc.org/github.com/dweomer/git-semver)
@@ -34,6 +34,7 @@ git semver init
 ```
 
 This will:
+
 - create an orphaned branch named `semver`.
 - create and commit a single file named after your current branch, i.e. `master`, with the content of `0.0.0`.
 - move this new checkout to `.semver` in your current repository
@@ -68,8 +69,6 @@ From [scope/scope.go](scope/scope.go), these values have default values that can
 - `SEMVER_PRE_PREFIX  = pre`
 - `SEMVER_USER_EMAIL  = semver@semver.org`
 - `SEMVER_USER_NAME   = semver`
-
-
 
 Additionally, `$SEMVER_BRANCH` (then `$GIT_BRANCH` if empty, then `$BRANCH_NAME`) will be dereferenced if `git-semver` is unable to detect the current branch (common with the default clone/checkout in Jenkins).
 

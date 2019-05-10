@@ -1,11 +1,12 @@
 
 # GIT SemVer
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/edgexfoundry/git-semver)](https://goreportcard.com/report/github.com/edgexfoundry/git-semver)
-[![Go Doc](https://godoc.org/github.com/edgexfoundry/git-semver?status.svg)](https://godoc.org/github.com/edgexfoundry/git-semver)
-[![Latest Release)](https://img.shields.io/github/tag-pre/edgexfoundry/git-semver.svg?label=latest)](https://github.com/edgexfoundry/git-semver/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dweomer/git-semver)](https://goreportcard.com/report/github.com/dweomer/git-semver)
+[![Go Doc](https://godoc.org/github.com/dweomer/git-semver?status.svg)](https://godoc.org/github.com/dweomer/git-semver)
 
 Create and manage a `.semver` directory right next to your `.git` directory, for all of your [Semantic Versioning][semver-web] needs.
+
+[![asciicast](https://asciinema.org/a/238944.svg?autoplay=1)](https://asciinema.org/a/238944)
 
 ## Installation
 
@@ -14,7 +15,7 @@ Create and manage a `.semver` directory right next to your `.git` directory, for
 If you're using Go (1.11.4+):
 
 ```bash
-go get github.com/edgexfoundry/git-semver
+go get github.com/dweomer/git-semver
 ```
 
 Assuming that your `$GOPATH/bin` is in your path, that's it.
@@ -104,7 +105,7 @@ git semver
 0.0.0
 ```
 
-Submitting such output with your [bug reports](https://github.com/edgexfoundry/git-semver/issues) will be helpful!
+Submitting such output with your [bug reports](https://github.com/dweomer/git-semver/issues) will be helpful!
 
 ---
 

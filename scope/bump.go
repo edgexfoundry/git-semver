@@ -24,6 +24,11 @@ func Bump(my, sv *Extent, axis, pre string) error {
 	case "final":
 		ver, err = makeVersion(ver, BumpFinal())
 	case "pre":
+		if len(ver.Pre) == 0 {
+			ver, err = makeVersion(ver, BumpPatch())
+		} else if pre == "" {
+			pre = ver.Pre[0].String()
+		}
 		if pre == "" {
 			pre = PrePrefix
 		}

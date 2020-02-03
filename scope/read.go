@@ -5,9 +5,9 @@
 package scope
 
 import (
-	"io/ioutil"
 	"strings"
 )
+
 
 // ReadVersion reads the semver version for the current branch.
 func ReadVersion(my, sv *Extent) (Version, error) {
@@ -17,7 +17,7 @@ func ReadVersion(my, sv *Extent) (Version, error) {
 	}
 	defer file.Close()
 	var buf []byte
-	if buf, err = ioutil.ReadAll(file); err != nil {
+	if buf, err = ioutilReadAll(file); err != nil {
 		return Version{}, err
 	}
 	ver := strings.TrimRight(string(buf), "\n\r")

@@ -1,18 +1,23 @@
-// Copyright (c) 2019 Intel Corporation
+// Copyright (c) 2020 Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package scope
 
 import (
+	"errors"
 	"fmt"
+	"github.com/blang/semver"
+	"os"
 	"strconv"
 	"testing"
-
-	"github.com/blang/semver"
 )
 
 const maxuint64 = ^uint64(0)
+
+var (
+	makeOptError  = errors.New("MakeOpt Error")
+)
 
 func TestBumpMajor(t *testing.T) {
 	tests := []struct {
@@ -163,5 +168,76 @@ func TestBumpPre(t *testing.T) {
 				t.Errorf("BumpPre(\"test\") = %T, want %T", ver, tt.want)
 			}
 		})
+	}
+}
+
+func TestPrivateMakeVersion_Error(t *testing.T) {
+	// makeVersion Should return expected When MakeOpt function returns an error
+	wantVersion, _ := semver.Parse("0.0.1-test.1")
+	var makeOptMock MakeOpt = func(version *Version) error {
+		return makeOptError
+	}
+
+	gotVersion, gotError := makeVersion(wantVersion, makeOptMock)
+	if gotVersion.Compare(wantVersion) != 0 {
+		t.Errorf("Failed to return expected version")
+	}
+	if gotError != makeOptError {
+		t.Errorf("Failed to return expected error")
+	}
+}
+
+func TestPrivateMakeVersion(t *testing.T) {
+	// makeVersion Should return expected When MakeOpt function has no error
+	wantVersion, _ := semver.Parse("0.0.1-test.1")
+	var makeOptMock MakeOpt = func(version *Version) error {
+		return nil
+	}
+
+	gotVersion, gotError := makeVersion(wantVersion, makeOptMock)
+	if gotVersion.Compare(wantVersion) != 0 {
+		t.Errorf("Failed to return expected version")
+	}
+	if gotError != nil {
+		t.Errorf("Failed returned error not expected")
+	}
+}
+
+func TestMakeVersion(t *testing.T) {
+	// MakeVersion Should return expected When version is prefixed with v
+	versionStr := "v0.0.1-test.1"
+	var makeOptMock MakeOpt = func(version *Version) error {
+		return nil
+	}
+
+	gotVersion, gotError := MakeVersion(versionStr, makeOptMock)
+	wantVersion, _ := semver.Parse("0.0.1-test.1")
+	if gotVersion.Compare(wantVersion) != 0 {
+		t.Errorf("Failed to return expected version")
+	}
+	if gotError != nil {
+		t.Errorf("Failed returned error not expected")
+	}
+}
+
+func TestGetEnv_Default(t *testing.T) {
+	os.Unsetenv("KEY1")
+	gotKey := GetEnv("KEY1", "DEFAULT")
+	wantKey := "DEFAULT"
+	if gotKey != wantKey {
+		t.Errorf("Failed did not return default value")
+	}
+}
+
+func TestGetEnv(t *testing.T) {
+	defer os.Unsetenv("KEY1")
+	gotError := os.Setenv("KEY1", "VALUE1")
+	if gotError != nil {
+		t.Errorf("Failed setting environment variable")
+	}
+	gotValue := GetEnv("KEY1", "DEFAULT")
+	wantValue := "VALUE1"
+	if gotValue != wantValue {
+		t.Errorf("Failed did not return expected value")
 	}
 }

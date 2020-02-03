@@ -20,6 +20,10 @@ import (
 
 var (
 	log = golog.New(ioutil.Discard, "", 0)
+	// variables representing patchable functions
+	ioutilReadAll = ioutil.ReadAll
+	_ReadVersion = ReadVersion
+	_WriteVersion = WriteVersion
 )
 
 func init() {

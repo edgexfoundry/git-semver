@@ -10,7 +10,7 @@ import (
 
 // Bump the specified semver axis with prefix, invoking WriteVersion on the result.
 func Bump(my, sv *Extent, axis, pre string) error {
-	ver, err := ReadVersion(my, sv)
+	ver, err := _ReadVersion(my, sv)
 	if err != nil {
 		return err
 	}
@@ -39,5 +39,5 @@ func Bump(my, sv *Extent, axis, pre string) error {
 	if err != nil {
 		return err
 	}
-	return WriteVersion(my, sv, ver)
+	return _WriteVersion(my, sv, ver)
 }

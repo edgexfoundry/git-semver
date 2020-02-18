@@ -116,6 +116,7 @@ func main() {
 		if err = scope.Bump(my, sv, _bump.Args()[0], pre); err != nil {
 			log.Fatalf("%s: %v", cmd, err)
 		}
+		echoVersion(my, sv, cmd)
 	case _tag.Parsed():
 		// do 'git-semver tag'
 		cmd = _tag.Name()
@@ -131,11 +132,7 @@ func main() {
 			log.Fatalf("%s: %v", cmd, err)
 		}
 	default:
-		if ver, err := scope.ReadVersion(my, sv); err != nil {
-			log.Fatalf("%s: %v", cmd, err)
-		} else {
-			fmt.Fprintln(os.Stdout, ver)
-		}
+		echoVersion(my, sv, cmd)
 	}
 }
 
@@ -145,4 +142,12 @@ func fail(err error, usage func()) {
 		usage()
 	}
 	os.Exit(1)
+}
+
+func echoVersion(my, sv *scope.Extent, cmd string) {
+	if ver, err := scope.ReadVersion(my, sv); err != nil {
+		log.Fatalf("%s: %v", cmd, err)
+	} else {
+		fmt.Fprintln(os.Stdout, ver)
+	}
 }

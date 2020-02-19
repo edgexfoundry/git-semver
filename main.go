@@ -15,13 +15,14 @@ import (
 )
 
 var (
-	dir   string
-	cli   = flag.NewFlagSet("git-semver", flag.ExitOnError)
-	_init = flag.NewFlagSet("git-semver-init", flag.ExitOnError)
-	_bump = flag.NewFlagSet("git-semver-bump", flag.ExitOnError)
-	_tag  = flag.NewFlagSet("git-semver-tag", flag.ExitOnError)
-	_push = flag.NewFlagSet("git-semver-push", flag.ExitOnError)
-	pre   string
+	dir     string
+	cli     = flag.NewFlagSet("git-semver", flag.ExitOnError)
+	_init   = flag.NewFlagSet("git-semver-init", flag.ExitOnError)
+	_bump   = flag.NewFlagSet("git-semver-bump", flag.ExitOnError)
+	_tag    = flag.NewFlagSet("git-semver-tag", flag.ExitOnError)
+	_push   = flag.NewFlagSet("git-semver-push", flag.ExitOnError)
+	pre     string
+	version string
 )
 
 func init() {
@@ -58,6 +59,7 @@ func init() {
 		fmt.Fprintln(cli.Output())
 	}
 
+	_init.StringVar(&version, "ver", "0.0.0", "the initial version (defaults to '0.0.0' if not specified)")
 	_bump.StringVar(&pre, "pre", "", "the pre-release prefix (defaults to 'pre' if not specified when bumping 'pre')")
 
 	if err := cli.Parse(os.Args[1:]); err != nil {
@@ -99,7 +101,7 @@ func main() {
 	if my, err = scope.Open(dir); err != nil {
 		log.Fatalf("%s: %v", cmd, err)
 	}
-	if sv, err = scope.Init(my, _init.Parsed()); err != nil {
+	if sv, err = scope.Init(my, _init.Parsed(), version); err != nil {
 		log.Fatalf("%s: %v", cmd, err)
 	} else if _init.Parsed() {
 		return

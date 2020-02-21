@@ -12,13 +12,15 @@ import (
 
 	"github.com/otiai10/copy"
 
+	"github.com/blang/semver"
+
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 // Init attempts to clone, but failing that will initialize, the semver orphan branch into .semver directory.
-func Init(my *Extent, create bool) (*Extent, error) {
+func Init(my *Extent, create bool, version string) (*Extent, error) {
 	var (
 		mydir = my.Store.Filesystem().Root()
 		myurl = mydir
@@ -105,7 +107,8 @@ func Init(my *Extent, create bool) (*Extent, error) {
 	}
 
 	if _, err = ReadVersion(my, sv); create && err != nil {
-		if err = WriteVersion(my, sv, Version{}); err != nil { // TODO: pick a better initial version than 0.0.0
+		// only set default version if a version is not present
+		if err = setDefaultVersion(my, sv, version); err != nil {
 			return nil, err
 		}
 	}
@@ -122,4 +125,15 @@ func Init(my *Extent, create bool) (*Extent, error) {
 	}
 
 	return sv, nil
+}
+
+func setDefaultVersion(my, sv *Extent, version string) error {
+	initVersion, err := semver.Parse(version)
+	if err != nil {
+		return err
+	}
+	if err = WriteVersion(my, sv, initVersion); err != nil {
+		return err
+	}
+	return nil
 }

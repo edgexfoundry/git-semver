@@ -23,6 +23,7 @@ var (
 	_push   = flag.NewFlagSet("git-semver-push", flag.ExitOnError)
 	pre     string
 	version string
+	force   *bool
 )
 
 func init() {
@@ -60,6 +61,7 @@ func init() {
 	}
 
 	_init.StringVar(&version, "ver", "0.0.0", "the initial version (defaults to '0.0.0' if not specified)")
+	force = _init.Bool("force", false, "force set the specified version")
 	_bump.StringVar(&pre, "pre", "", "the pre-release prefix (defaults to 'pre' if not specified when bumping 'pre')")
 
 	if err := cli.Parse(os.Args[1:]); err != nil {
@@ -101,7 +103,7 @@ func main() {
 	if my, err = scope.Open(dir); err != nil {
 		log.Fatalf("%s: %v", cmd, err)
 	}
-	if sv, err = scope.Init(my, _init.Parsed(), version); err != nil {
+	if sv, err = scope.Init(my, _init.Parsed(), version, *force); err != nil {
 		log.Fatalf("%s: %v", cmd, err)
 	} else if _init.Parsed() {
 		return

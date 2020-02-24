@@ -23,7 +23,7 @@ Assuming that your `$GOPATH/bin` is in your path, that's it.
 
 NOTE: As of yet, authentication is the default provided by [src-d/go-git](https://github.com/src-d/go-git), i.e. ssh-agent auth for SSH URLs.
 
-### `git semver init [-ver=<version>]`
+### `git semver init [-ver=<version>] [-force]`
 
 Prepare the repository (and the current branch) for Semantic Versioning:
 
@@ -37,8 +37,9 @@ This will:
 - create an orphaned branch named `semver`.
 - create and commit a single file named after your current branch, i.e. `master`, with the content of `0.0.0` unless a version is specified. The default version can be overridden by specifying the `-ver=<version>` flag to `init`. Note, if specified, the version must be a valid semantic version otherwise the command will return an error.
 - move this new checkout to `.semver` in your current repository
-- - modify the `.git/info/exclude` to ignore `.semver`
+- modify the `.git/info/exclude` to ignore `.semver`
 - push the `semver` branch to your current `.git` repository directory as if it were a remote.
+- `force` will force set the specified or default version regardless of an existing version being present.
 
 This invocation is idempotent-ish in that it will inspect your current repository and make modifications to the `semver` configuration accordingly. It will also attempt to clone (or checkout) the `semver` branch if it already exists instead of creating it anew.
 

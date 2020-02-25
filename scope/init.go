@@ -20,7 +20,7 @@ import (
 )
 
 // Init attempts to clone, but failing that will initialize, the semver orphan branch into .semver directory.
-func Init(my *Extent, create bool, version string) (*Extent, error) {
+func Init(my *Extent, create bool, version string, force bool) (*Extent, error) {
 	var (
 		mydir = my.Store.Filesystem().Root()
 		myurl = mydir
@@ -106,10 +106,13 @@ func Init(my *Extent, create bool, version string) (*Extent, error) {
 		return nil, err
 	}
 
-	if _, err = ReadVersion(my, sv); create && err != nil {
-		// only set default version if a version is not present
-		if err = setDefaultVersion(my, sv, version); err != nil {
-			return nil, err
+	if create {
+		log.Printf("# -> Force: %t", force)
+		if _, err = ReadVersion(my, sv); err != nil || force {
+			// set version if semantic version is not present or if force is set
+			if err = setDefaultVersion(my, sv, version); err != nil {
+				return nil, err
+			}
 		}
 	}
 

@@ -53,9 +53,9 @@ This will bump the specified axis and commit the change to the semver branch. `f
 
 For example, if currently on the `master` branch and the value returned by `git semver` is `1.0.0` invoking `git semver bump -pre=rc patch` will result in `1.0.1-rc.1` written to `$PWD/.semver/master` and commited, the written to STDOUT.
 
-### `git semver tag`
+### `git semver tag [-force]`
 
-Attempt to tag the current HEAD with a tag that is effectively `v$(git semver)`. This will fail if `git-semver` detects a tag on the current HEAD that can be parsed as a Semantic Version.
+Attempt to tag the current HEAD with a tag that is effectively `v$(git semver)`. This will fail if `git-semver` detects a tag on the current HEAD that can be parsed as a Semantic Version, unless the `force` flag is specified. The `force` flag will tag the current HEAD regardless if there is an existing tag present on HEAD.
 
 ### `git semver push`
 

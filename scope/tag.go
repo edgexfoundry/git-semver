@@ -14,7 +14,7 @@ import (
 )
 
 // Tag the current HEAD with the current semver version.
-func Tag(my, sv *Extent) error {
+func Tag(my, sv *Extent, force bool) error {
 	tip, err := my.Repo.Head()
 	if err != nil {
 		return err
@@ -24,7 +24,8 @@ func Tag(my, sv *Extent) error {
 	if err != nil {
 		return err
 	}
-	if tag != nil {
+	log.Printf("# -> Force: %t", force)
+	if tag != nil && !force {
 		log.Printf("# %s", tag)
 		return fmt.Errorf("%s is already tagged: %s", tip.Hash().String()[:7], tag.Name().Short())
 	}

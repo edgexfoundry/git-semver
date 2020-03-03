@@ -15,15 +15,16 @@ import (
 )
 
 var (
-	dir     string
-	cli     = flag.NewFlagSet("git-semver", flag.ExitOnError)
-	_init   = flag.NewFlagSet("git-semver-init", flag.ExitOnError)
-	_bump   = flag.NewFlagSet("git-semver-bump", flag.ExitOnError)
-	_tag    = flag.NewFlagSet("git-semver-tag", flag.ExitOnError)
-	_push   = flag.NewFlagSet("git-semver-push", flag.ExitOnError)
-	pre     string
-	version string
-	force   *bool
+	dir       string
+	cli       = flag.NewFlagSet("git-semver", flag.ExitOnError)
+	_init     = flag.NewFlagSet("git-semver-init", flag.ExitOnError)
+	_bump     = flag.NewFlagSet("git-semver-bump", flag.ExitOnError)
+	_tag      = flag.NewFlagSet("git-semver-tag", flag.ExitOnError)
+	_push     = flag.NewFlagSet("git-semver-push", flag.ExitOnError)
+	pre       string
+	version   string
+	force     *bool
+	force_tag *bool
 )
 
 func init() {
@@ -63,6 +64,7 @@ func init() {
 	_init.StringVar(&version, "ver", "0.0.0", "the initial version (defaults to '0.0.0' if not specified)")
 	force = _init.Bool("force", false, "force set the specified version")
 	_bump.StringVar(&pre, "pre", "", "the pre-release prefix (defaults to 'pre' if not specified when bumping 'pre')")
+	force_tag = _tag.Bool("force", false, "force tag current HEAD with current semver version")
 
 	if err := cli.Parse(os.Args[1:]); err != nil {
 		fail(err, cli.Usage)
@@ -125,7 +127,7 @@ func main() {
 		// do 'git-semver tag'
 		cmd = _tag.Name()
 
-		if err = scope.Tag(my, sv); err != nil {
+		if err = scope.Tag(my, sv, *force_tag); err != nil {
 			log.Fatalf("%s: %v", cmd, err)
 		}
 	case _push.Parsed():

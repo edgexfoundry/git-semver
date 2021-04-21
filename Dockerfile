@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ARG BASE=golang:1.13-alpine
+ARG BASE=golang:1.15-alpine
 FROM ${BASE} as builder
 
 RUN sed -e 's/dl-cdn[.]alpinelinux.org/nl.alpinelinux.org/g' -i~ /etc/apk/repositories

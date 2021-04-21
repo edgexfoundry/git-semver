@@ -16,7 +16,7 @@
 
 edgeXBuildGoApp (
     project: 'git-semver',
-    goVersion: '1.13',
+    goVersion: '1.15',
     dockerImageName: 'git-semver',
     dockerNamespace: 'edgex-devops'
 )

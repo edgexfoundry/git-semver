@@ -14,9 +14,9 @@ import (
 
 	"github.com/blang/semver"
 
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/config"
-	"gopkg.in/src-d/go-git.v4/plumbing"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 // Init attempts to clone, but failing that will initialize, the semver orphan branch into .semver directory.

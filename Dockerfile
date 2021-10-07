@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ARG BASE=golang:1.15-alpine
+ARG BASE=golang:1.16-alpine3.14
 FROM ${BASE} as builder
 
 RUN sed -e 's/dl-cdn[.]alpinelinux.org/nl.alpinelinux.org/g' -i~ /etc/apk/repositories
@@ -29,7 +29,7 @@ RUN go mod download
 ARG MAKE="make build"
 RUN $MAKE
 
-FROM alpine:3.9
+FROM alpine:3.14
 
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
     copyright='Copyright (c) 2020: Intel'

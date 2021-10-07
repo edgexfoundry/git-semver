@@ -6,7 +6,10 @@ VERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
 
 GOFLAGS=-ldflags "-X github.com/edgexfoundry/git-semver.Version=$(VERSION)"
 
-build:
+tidy:
+	$(GO) mod tidy
+
+build: tidy
 	$(GO) build $(GOFLAGS) -o git-semver
 
 test:

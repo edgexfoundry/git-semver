@@ -28,7 +28,7 @@ use_plugin('pypi:pybuilder_anybadge')
 
 name = 'pygsver'
 authors = [Author('Emilio Reyes', 'emilio.reyes@intel.com')]
-summary = 'A prototype of git-semver written in Python'
+summary = 'A Python script that manages semantic versioning of a git repository'
 url = 'https://github.com/soda480/py-git-semver'
 version = '0.1.0'
 default_task = [

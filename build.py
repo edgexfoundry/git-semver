@@ -20,7 +20,7 @@ from pybuilder.core import Author
 use_plugin('python.core')
 use_plugin('python.unittest')
 use_plugin('python.flake8')
-use_plugin('python.coverage')
+# use_plugin('python.coverage')
 use_plugin('python.distutils')
 use_plugin('pypi:pybuilder_radon')
 use_plugin('pypi:pybuilder_bandit')
@@ -45,10 +45,10 @@ description = summary
 @init
 def set_properties(project):
     project.set_property('unittest_module_glob', 'test_*.py')
-    # project.set_property('coverage_break_build', True)
+    project.set_property('coverage_break_build', True)
     project.set_property('flake8_max_line_length', 120)
     project.set_property('flake8_verbose_output', True)
-    # project.set_property('flake8_break_build', True)
+    project.set_property('flake8_break_build', True)
     project.set_property('flake8_include_scripts', True)
     project.set_property('flake8_include_test_sources', True)
     project.set_property('flake8_ignore', 'E501, W503, F401, F841')
@@ -75,7 +75,8 @@ def set_properties(project):
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Networking',
         'Topic :: System :: Systems Administration'])
-    # project.set_property('radon_break_build_average_complexity_threshold', 3.6)
-    # project.set_property('radon_break_build_complexity_threshold', 14)
-    # project.set_property('bandit_break_build', True)
+    project.set_property('radon_break_build_average_complexity_threshold', 3.6)
+    project.set_property('radon_break_build_complexity_threshold', 14)
+    project.set_property('bandit_break_build', True)
+    project.set_property('bandit_skip_ids', 'B404,B603')
     project.set_property('anybadge_use_shields', True)

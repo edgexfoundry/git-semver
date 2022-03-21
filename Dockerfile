@@ -20,15 +20,4 @@ WORKDIR /code
 COPY . /code/
 RUN apt-get update && apt-get install -y ssh netcat git
 RUN pip install pybuilder
-RUN pyb install
-
-FROM python:3.9-slim
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV GIT_PYTHON_TRACE 1
-WORKDIR /opt/tgsver
-RUN apt-get update && apt-get install -y ssh netcat git gosu
-COPY --from=build-image /code/target/dist/tgsver-*/dist/tgsver-*.tar.gz /opt/tgsver/
-RUN pip install tgsver-*.tar.gz
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# RUN pyb install

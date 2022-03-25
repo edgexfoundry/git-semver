@@ -70,21 +70,25 @@ def branch_exists(client, repo_name, branch_name):
 
 
 def get_file_url(client, repo_name, branch_name, file_name):
-    results = client.get(f'/repos/{repo_name}/git/trees/{branch_name}?recursive=1')
-    for result in results['tree']:
-        if result['path'] == file_name:
-            return result['url']
+    if branch_exists(client, repo_name, branch_name):
+        results = client.get(f'/repos/{repo_name}/git/trees/{branch_name}?recursive=1')
+        for result in results['tree']:
+            if result['path'] == file_name:
+                return result['url']
+        logger.debug(f'the file {file_name} does not exist in branch {branch_name} in repo {repo_name}')
+    else:
+        logger.debug(f'the branch {branch_name} does not exist in repo {repo_name}')
 
 
 def read_file(client, repo_name, branch_name, file_name):
-    # TODO: make method handle errors (log warnings if branch or file does not exist just return None)
     file_url = get_file_url(client, repo_name, branch_name, file_name)
-    results = client.get(file_url)
-    content = results['content']
-    content_encoding = results.get('encoding')
-    if content_encoding == 'base64':
-        content = base64.b64decode(content).decode()
-    return content.strip()
+    if file_url:
+        results = client.get(file_url)
+        content = results['content']
+        content_encoding = results.get('encoding')
+        if content_encoding == 'base64':
+            content = base64.b64decode(content).decode()
+            return content.strip()
 
 
 def is_head_tagged(client, repo_name, branch_name):

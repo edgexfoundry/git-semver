@@ -18,6 +18,8 @@ import sys
 import time
 import logging
 
+from tgsver.test import Suite
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,7 +53,7 @@ def setup_logging():
 
     name = os.path.basename(sys.argv[0])
     file_handler = logging.FileHandler(f'{name}.log')
-    file_formatter = logging.Formatter("%(asctime)s [%(funcName)s] %(levelname)s %(message)s")
+    file_formatter = logging.Formatter("%(asctime)s %(name)s [%(funcName)s] %(levelname)s %(message)s")
     file_handler.setFormatter(file_formatter)
     root_logger.addHandler(file_handler)
 
@@ -60,17 +62,10 @@ def main():
     """ main function
     """
     setup_logging()
-    client = None
-    repo_name = None
     try:
-        # client = get_client()
-        # repo_name = create_repo(client)
-        # create_branch(client, repo_name)
-        # setup(repo_name)
-        # tests = load_tests()
-        # results = execute_tests(tests)
-        # write_summary(results)
-        pass
+        suite = Suite(path='t.json')
+        suite.execute()
+        suite.summary()
 
     except Exception as exception:
         logger.error(exception)
@@ -78,8 +73,7 @@ def main():
         sys.exit(1)
 
     finally:
-        # delete_repo(client, repo_name)
-        pass
+        del suite
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 def get_client():
     """ return instance of RESTclient for Github API
     """
+    logger.debug('getting github API client')
     token = os.getenv('GH_TOKEN_PSW')
     if not token:
         raise Exception('GH_TOKEN_PSW environment variable must be set')
@@ -36,16 +37,19 @@ def get_client():
 
 def create_repo(client):
     repo_name = 'tgsver-' + time.strftime('%m-%d-%Y-%H-%M-%S')
+    logger.debug(f'creating test repository: {repo_name}')
     response = client.post('/user/repos', json={'name': repo_name, 'auto_init': True})
     return response['full_name']
 
 
 def delete_repo(client, repo_name):
+    logger.debug(f'deleting test repository: {repo_name}')
     if client and repo_name:
         client.delete(f'/repos/{repo_name}')
 
 
 def create_branch(client, repo_name):
+    logger.debug(f'creating branch branch1 on repository {repo_name}')
     branches = client.get(f'/repos/{repo_name}/git/refs/heads')
     client.post(
         f'/repos/{repo_name}/git/refs',
@@ -56,12 +60,14 @@ def create_branch(client, repo_name):
 
 
 def remove_branch(client, repo_name, branch_name):
+    """ removes branch from github repository
     """
-    """
+    logger.debug(f'removing branch {branch_name} from repository {repo_name}')
     client.delete(f'/repos/{repo_name}/git/refs/heads/{branch_name}')
 
 
 def branch_exists(client, repo_name, branch_name):
+    logger.debug(f'checking if branch {branch_name} exists on repository {repo_name}')
     branches = client.get(f'/repos/{repo_name}/branches')
     for branch in branches:
         if branch['name'] == branch_name:
@@ -70,6 +76,7 @@ def branch_exists(client, repo_name, branch_name):
 
 
 def get_file_url(client, repo_name, branch_name, file_name):
+    logger.debug(f'retrieving {file_name} url from repository {repo_name} on branch {branch_name}')
     if branch_exists(client, repo_name, branch_name):
         results = client.get(f'/repos/{repo_name}/git/trees/{branch_name}?recursive=1')
         for result in results['tree']:
@@ -81,6 +88,7 @@ def get_file_url(client, repo_name, branch_name, file_name):
 
 
 def read_file(client, repo_name, branch_name, file_name):
+    logger.debug(f'reading file content from {file_name} from repository {repo_name} on branch {branch_name}')
     file_url = get_file_url(client, repo_name, branch_name, file_name)
     if file_url:
         results = client.get(file_url)
@@ -92,6 +100,7 @@ def read_file(client, repo_name, branch_name, file_name):
 
 
 def is_head_tagged(client, repo_name, branch_name):
+    logger.debug(f'checking if head from repository {repo_name} on {branch_name} is tagged')
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
     for tag in tags:
@@ -101,6 +110,7 @@ def is_head_tagged(client, repo_name, branch_name):
 
 
 def get_head_tag(client, repo_name, branch_name):
+    logger.debug(f'retrieving headtag from repository {repo_name} on branch {branch_name}')
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
     for tag in tags:

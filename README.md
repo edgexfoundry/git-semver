@@ -16,6 +16,10 @@ docker container run \
 --rm \
 -it \
 -e ALL_PROXY=socks5://proxy-us.intel.com:1080 \
+-e http_proxy \
+-e https_proxy \
+-e GH_TOKEN_PSW \
+--entrypoint='' \
 -v $HOME/.ssh:/root/.ssh \
 tgsver:latest bash
 

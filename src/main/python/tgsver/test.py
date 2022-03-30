@@ -25,6 +25,7 @@ from tgsver.utils import read_file
 from tgsver.utils import get_client
 from tgsver.utils import create_repo
 from tgsver.utils import delete_repo
+from tgsver.utils import clone_repo
 from progress1bar import ProgressBar
 
 
@@ -52,10 +53,15 @@ class Test:
         self.actual_result = None
         self.passed = None
 
-    def execute(self, client, repo_name):
+    def execute(self, client, repo_name, repo_dir):
         # execute the command and store the result
-        process = run_command(self.command, env=self.envars, noop=False)
-        # print(process)
+        run_command_kwargs = {
+            'cwd': repo_dir,
+            'noop': False
+        }
+        if self.envars:
+            run_command_kwargs['env'] = self.envars
+        process = run_command(self.command, **run_command_kwargs)
         remote_tag = None
         if self.expected_result.remote_tag:
             remote_tag = get_head_tag(client, repo_name, self.branch_name)
@@ -95,7 +101,9 @@ class Suite:
     def __init__(self, path=None):
         logger.debug('Suite constructor')
         self.client = get_client()
-        self.repo_name = create_repo(self.client)
+        repo = create_repo(self.client)
+        self.repo_name = repo['full_name']
+        self.repo_dir = clone_repo(repo['ssh_url'], repo['name'])
         self.path = path
         self.tests = []
         if self.path:
@@ -120,14 +128,20 @@ class Suite:
             test_obj.expected_result = Result(**expected_result_kwargs)
             self.tests.append(test_obj)
 
+    def setup():
+        run_command('eval `ssh-agent`', noop=False)
+        run_command('ssh-add', noop=False)
+        run_command('ssh -T git@github.com', noop=False)
+        run_command(f'cd /{self.repo_name}')
+
     def execute(self):
         logger.debug(f'executing {len(self.tests)} tests')
         with ProgressBar() as pb:
             pb.total = len(self.tests)
+            # setup()
             for index, test in enumerate(self.tests):
                 pb.alias = f'test{index}'
-                test.execute(self.client, self.repo_name)
-                time.sleep(1.5)
+                test.execute(self.client, self.repo_name, self.repo_dir)
                 pb.count += 1
             pb.alias = ''
 
@@ -148,35 +162,35 @@ class Suite:
         print(f'failed: {failed}')
 
     def create_tests(self):
-        self.tests.append(Test(command='git semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
-        self.tests.append(Test(command='git semver init', expected_result=Result(stdout='0.0.0')))
-        self.tests.append(Test(command='git semver init --version=1.0.0-dev.1 --force', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git semver', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git semver push', expected_result=Result(stdout='1.0.0-dev.1')))
+        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
+        self.tests.append(Test(command='git-semver init', expected_result=Result(stdout='0.0.0')))
+        self.tests.append(Test(command='git-semver init --version=1.0.0-dev.1 --force', expected_result=Result(stdout='1.0.0-dev.1')))
+        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='1.0.0-dev.1')))
+        self.tests.append(Test(command='git-semver push', expected_result=Result(stdout='1.0.0-dev.1')))
         self.tests.append(Test(command='rm -rf .semver', expected_result=Result()))
-        self.tests.append(Test(command='git semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
-        self.tests.append(Test(command='git semver init', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git semver', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git semver tag', expected_result=Result(stdout='1.0.0-dev.1', remote_tag='1.0.0-dev.1', remote_version='1.0.0-dev.1'), branch_name='main'))
-        self.tests.append(Test(command='git semver bump pre', expected_result=Result(stdout='1.0.0-dev.2'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git semver push', expected_result=Result(stdout='1.0.0-dev.2')))
-        self.tests.append(Test(command='git semver tag', expected_result=Result(stdout='is already tagged with', exit_code=1, remote_tag='1.0.0-dev.1', remote_version='1.0.0-dev.1'), branch_name='main'))
-        self.tests.append(Test(command='git semver tag --fource', expected_result=Result(stdout='1.0.0-dev.2', remote_tag='1.0.0-dev.2', remote_version='1.0.0-dev.2'), branch_name='main'))
-        self.tests.append(Test(command='git semver bump pre', expected_result=Result(stdout='1.0.0-dev.3'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git semver push', expected_result=Result(stdout='1.0.0-dev.3')))
+        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
+        self.tests.append(Test(command='git-semver init', expected_result=Result(stdout='1.0.0-dev.1')))
+        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='1.0.0-dev.1')))
+        self.tests.append(Test(command='git-semver tag', expected_result=Result(stdout='1.0.0-dev.1', remote_tag='1.0.0-dev.1', remote_version='1.0.0-dev.1'), branch_name='main'))
+        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='1.0.0-dev.2'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
+        self.tests.append(Test(command='git-semver push', expected_result=Result(stdout='1.0.0-dev.2')))
+        self.tests.append(Test(command='git-semver tag', expected_result=Result(stdout='is already tagged with', exit_code=1, remote_tag='1.0.0-dev.1', remote_version='1.0.0-dev.1'), branch_name='main'))
+        self.tests.append(Test(command='git-semver tag --force', expected_result=Result(stdout='1.0.0-dev.2', remote_tag='1.0.0-dev.2', remote_version='1.0.0-dev.2'), branch_name='main'))
+        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='1.0.0-dev.3'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
+        self.tests.append(Test(command='git-semver push', expected_result=Result(stdout='1.0.0-dev.3')))
         self.tests.append(Test(command='rm -rf .semver', expected_result=Result()))
-        self.tests.append(Test(command='git semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
-        self.tests.append(Test(command='git semver init', expected_result=Result(stdout='1.0.0-dev.3')))
-        self.tests.append(Test(command='git semver', expected_result=Result(stdout='1.0.0-dev.3')))
-        self.tests.append(Test(command='git semver bump pre', expected_result=Result(stdout='1.0.0-dev.4'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git semver bump pre --prefix=rc', expected_result=Result(stdout='mismatch between current prerelease dev and bump rc', exit_code=1)))
-        self.tests.append(Test(command='git semver bump patch', expected_result=Result(stdout='1.0.1')))
-        self.tests.append(Test(command='git semver bump minor', expected_result=Result(stdout='1.1.0')))
-        self.tests.append(Test(command='git semver bump major', expected_result=Result(stdout='2.0.0')))
-        self.tests.append(Test(command='git semver bump pre --prefix=tst', expected_result=Result(stdout='2.0.0-tst.1')))
-        self.tests.append(Test(command='git semver bump pre', expected_result=Result(stdout='mismatch between current prerelease tst and bump dev', exit_code=1), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git semver bump pre', expected_result=Result(stdout='2.0.0-tst.2'), envars={'SEMVER_PRE_PREFIX': 'tst'}))
-        self.tests.append(Test(command='git semver bump final', expected_result=Result(stdout='2.0.0')))
+        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
+        self.tests.append(Test(command='git-semver init', expected_result=Result(stdout='1.0.0-dev.3')))
+        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='1.0.0-dev.3')))
+        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='1.0.0-dev.4'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
+        self.tests.append(Test(command='git-semver bump pre --prefix=rc', expected_result=Result(stdout='mismatch between current prerelease dev and bump rc', exit_code=1)))
+        self.tests.append(Test(command='git-semver bump patch', expected_result=Result(stdout='1.0.1')))
+        self.tests.append(Test(command='git-semver bump minor', expected_result=Result(stdout='1.1.0')))
+        self.tests.append(Test(command='git-semver bump major', expected_result=Result(stdout='2.0.0')))
+        self.tests.append(Test(command='git-semver bump pre --prefix=tst', expected_result=Result(stdout='2.0.0-tst.1')))
+        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='mismatch between current prerelease tst and bump dev', exit_code=1), envars={'SEMVER_PRE_PREFIX': 'dev'}))
+        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='2.0.0-tst.2'), envars={'SEMVER_PRE_PREFIX': 'tst'}))
+        self.tests.append(Test(command='git-semver bump final', expected_result=Result(stdout='2.0.0')))
 
 
 class TestEncoder(json.JSONEncoder):

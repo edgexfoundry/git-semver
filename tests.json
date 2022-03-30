@@ -2,7 +2,7 @@
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver",
+        "command": "/usr/local/bin/git-semver",
         "envars": {},
         "expected_result": {
             "exit_code": 1,
@@ -11,12 +11,12 @@
             "stderr": null,
             "stdout": "the semver branch does not exist"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver init",
+        "command": "/usr/local/bin/git-semver init",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -25,12 +25,12 @@
             "stderr": null,
             "stdout": "0.0.0"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver init --version=1.0.0-dev.1 --force",
+        "command": "/usr/local/bin/git-semver init --version=1.0.0-dev.1 --force",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -39,12 +39,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver",
+        "command": "/usr/local/bin/git-semver",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -53,12 +53,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver push",
+        "command": "/usr/local/bin/git-semver push",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -67,7 +67,7 @@
             "stderr": null,
             "stdout": "1.0.0-dev.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
@@ -81,12 +81,12 @@
             "stderr": null,
             "stdout": null
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver",
+        "command": "/usr/local/bin/git-semver",
         "envars": {},
         "expected_result": {
             "exit_code": 1,
@@ -95,12 +95,12 @@
             "stderr": null,
             "stdout": "the semver branch does not exist"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver init",
+        "command": "/usr/local/bin/git-semver init",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -109,12 +109,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver",
+        "command": "/usr/local/bin/git-semver",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -123,12 +123,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver tag",
+        "command": "/usr/local/bin/git-semver tag",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -137,12 +137,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre",
+        "command": "/usr/local/bin/git-semver bump pre",
         "envars": {
             "SEMVER_PRE_PREFIX": "dev"
         },
@@ -153,12 +153,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.2"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver push",
+        "command": "/usr/local/bin/git-semver push",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -167,12 +167,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.2"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver tag",
+        "command": "/usr/local/bin/git-semver tag",
         "envars": {},
         "expected_result": {
             "exit_code": 1,
@@ -181,12 +181,12 @@
             "stderr": null,
             "stdout": "is already tagged with"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver tag --fource",
+        "command": "/usr/local/bin/git-semver tag --force",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -195,12 +195,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.2"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre",
+        "command": "/usr/local/bin/git-semver bump pre",
         "envars": {
             "SEMVER_PRE_PREFIX": "dev"
         },
@@ -211,12 +211,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.3"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver push",
+        "command": "/usr/local/bin/git-semver push",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -225,7 +225,7 @@
             "stderr": null,
             "stdout": "1.0.0-dev.3"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
@@ -239,12 +239,12 @@
             "stderr": null,
             "stdout": null
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver",
+        "command": "/usr/local/bin/git-semver",
         "envars": {},
         "expected_result": {
             "exit_code": 1,
@@ -253,12 +253,12 @@
             "stderr": null,
             "stdout": "the semver branch does not exist"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver init",
+        "command": "/usr/local/bin/git-semver init",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -267,12 +267,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.3"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver",
+        "command": "/usr/local/bin/git-semver",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -281,12 +281,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.3"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre",
+        "command": "/usr/local/bin/git-semver bump pre",
         "envars": {
             "SEMVER_PRE_PREFIX": "dev"
         },
@@ -297,12 +297,12 @@
             "stderr": null,
             "stdout": "1.0.0-dev.4"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre --prefix=rc",
+        "command": "/usr/local/bin/git-semver bump pre --prefix=rc",
         "envars": {},
         "expected_result": {
             "exit_code": 1,
@@ -311,12 +311,12 @@
             "stderr": null,
             "stdout": "mismatch between current prerelease dev and bump rc"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump patch",
+        "command": "/usr/local/bin/git-semver bump patch",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -325,12 +325,12 @@
             "stderr": null,
             "stdout": "1.0.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump minor",
+        "command": "/usr/local/bin/git-semver bump minor",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -339,12 +339,12 @@
             "stderr": null,
             "stdout": "1.1.0"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump major",
+        "command": "/usr/local/bin/git-semver bump major",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -353,12 +353,12 @@
             "stderr": null,
             "stdout": "2.0.0"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre --prefix=tst",
+        "command": "/usr/local/bin/git-semver bump pre --prefix=tst",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -367,12 +367,12 @@
             "stderr": null,
             "stdout": "2.0.0-tst.1"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre",
+        "command": "/usr/local/bin/git-semver bump pre",
         "envars": {
             "SEMVER_PRE_PREFIX": "dev"
         },
@@ -383,12 +383,12 @@
             "stderr": null,
             "stdout": "mismatch between current prerelease tst and bump dev"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump pre",
+        "command": "/usr/local/bin/git-semver bump pre",
         "envars": {
             "SEMVER_PRE_PREFIX": "tst"
         },
@@ -399,12 +399,12 @@
             "stderr": null,
             "stdout": "2.0.0-tst.2"
         },
-        "passed": false
+        "passed": null
     },
     {
         "actual_result": null,
         "branch_name": "main",
-        "command": "git semver bump final",
+        "command": "/usr/local/bin/git-semver bump final",
         "envars": {},
         "expected_result": {
             "exit_code": 0,
@@ -413,6 +413,6 @@
             "stderr": null,
             "stdout": "2.0.0"
         },
-        "passed": false
+        "passed": null
     }
 ]

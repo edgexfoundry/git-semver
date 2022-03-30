@@ -39,7 +39,7 @@ def create_repo(client):
     repo_name = 'tgsver-' + time.strftime('%m-%d-%Y-%H-%M-%S')
     logger.debug(f'creating test repository: {repo_name}')
     response = client.post('/user/repos', json={'name': repo_name, 'auto_init': True})
-    return response['full_name']
+    return response
 
 
 def delete_repo(client, repo_name):
@@ -123,7 +123,7 @@ def run_command(command, noop=True, **kwargs):
     """
     logger.debug(f'run command: {command}')
     if not noop:
-        process = subprocess.run(command.split(' '))
+        process = subprocess.run(command.split(' '), capture_output=True, text=True, **kwargs)
         logger.debug(f"return code: {process.returncode}")
         if process.stdout:
             logger.debug(f'stdout:\n{process.stdout}')
@@ -140,3 +140,10 @@ def get_random():
     """
     choices = [round(number * .05, 2) for number in range(20) if number > 0]
     return secrets.choice(choices)
+
+
+def clone_repo(ssh_url, repo_name):
+    process = run_command(f'git clone {ssh_url} {repo_name}', noop=False)
+    if process.returncode != 0:
+        Exception('ERROR: unable to clone ssh-url')
+    return repo_name

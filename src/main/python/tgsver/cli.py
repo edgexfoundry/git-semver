@@ -62,8 +62,9 @@ def main():
     """ main function
     """
     setup_logging()
+    suite = None
     try:
-        suite = Suite(path='t.json')
+        suite = Suite(path='tests.json')
         suite.execute()
         suite.summary()
 
@@ -73,7 +74,8 @@ def main():
         sys.exit(1)
 
     finally:
-        del suite
+        if suite is not None:
+            del suite
 
 
 if __name__ == '__main__':

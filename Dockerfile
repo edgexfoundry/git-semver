@@ -20,4 +20,16 @@ WORKDIR /code
 COPY . /code/
 RUN apt-get update && apt-get install -y ssh netcat git
 RUN pip install pybuilder
-# RUN pyb install
+RUN pyb install
+
+FROM python:3.9-slim
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV GIT_PYTHON_TRACE 1
+WORKDIR /opt/tgsver
+RUN apt-get update && apt-get install -y ssh netcat git gosu vim
+COPY tests.json /opt/tgsver/
+COPY --from=build-image /code/target/dist/tgsver-*/dist/tgsver-*.tar.gz /opt/tgsver/
+RUN pip install tgsver-*.tar.gz
+COPY pygsver-0.1.0.tar.gz /opt/tgsver/
+RUN pip install pygsver-0.1.0.tar.gz
+ENTRYPOINT ["test-git-semver"]

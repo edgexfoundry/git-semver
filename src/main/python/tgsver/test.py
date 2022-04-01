@@ -128,9 +128,10 @@ class Test:
 
 class Suite:
 
-    def __init__(self, path=None, setup_ssh=True, clone_repo=True):
+    def __init__(self, path=None, keep_repo=None, setup_ssh=True, clone_repo=True):
         logger.debug('executing Suite constructor')
 
+        self.keep_repo = keep_repo
         self.stream_handler = logs.add_stream_handler()
 
         if setup_ssh:
@@ -163,7 +164,7 @@ class Suite:
 
     def __del__(self):
         logger.debug('executing Suite destructor')
-        if hasattr(self, 'client') and hasattr(self, 'repo_name'):
+        if not self.keep_repo and hasattr(self, 'client') and hasattr(self, 'repo_name'):
             utils.delete_repo(self.client, self.repo_name)
 
     @staticmethod
@@ -215,6 +216,8 @@ class Suite:
         else:
             print(f"{Style.BRIGHT + Fore.GREEN}All Git Semver Tests PASSED{Style.RESET_ALL}")
         print(f'Total:{len(self.tests)} Passed:{passed} Failed:{failed}')
+        with open('test-git-semver-results.json', 'w') as out_file:
+            json.dump(self.tests, out_file, cls=TestEncoder, indent=4)
 
     def create_tests(self):
         self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))

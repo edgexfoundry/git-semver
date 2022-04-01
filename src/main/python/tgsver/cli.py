@@ -17,17 +17,33 @@ import sys
 import logging
 import tgsver.logs as logs
 import tgsver.test as test
+from argparse import ArgumentParser
 
 logger = logging.getLogger(__name__)
+
+
+def get_parser():
+    """ setup parser and return parsed command line arguments
+    """
+    parser = ArgumentParser(
+        description='A CLI to execute tests for git semver functionality.')
+    parser.add_argument(
+        '--keep_repo',
+        dest='keep_repo',
+        action='store_true',
+        help='does not delete test repo from GitHub after testing')
+    return parser
 
 
 def main():
     """ main function
     """
     logs.setup_logging()
+    parser = get_parser()
     suite = None
     try:
-        suite = test.Suite(path='tests.json')
+        args = parser.parse_args()
+        suite = test.Suite(path='tests.json', keep_repo=args.keep_repo)
         suite.execute()
         suite.summary()
 

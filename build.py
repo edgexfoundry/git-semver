@@ -27,7 +27,9 @@ use_plugin('pypi:pybuilder_bandit')
 use_plugin('pypi:pybuilder_anybadge')
 
 name = 'tgsver'
-authors = [Author('Jaron Bauers', 'jaron.bauers@intel.com')]
+authors = [
+    Author('Jaron Bauers', 'jaron.bauers@intel.com'),
+    Author('Emilio Reyes', 'emilio.reyes@intel.com')]
 summary = 'A Python script to automate the functional testing of the git-semver capability'
 url = 'https://github.com/jaron-bauers/test-git-semver'
 version = '0.1.0'
@@ -78,5 +80,5 @@ def set_properties(project):
     project.set_property('radon_break_build_average_complexity_threshold', 3.6)
     project.set_property('radon_break_build_complexity_threshold', 14)
     project.set_property('bandit_break_build', True)
-    project.set_property('bandit_skip_ids', 'B404,B603')
+    project.set_property('bandit_skip_ids', 'B404,B603,B604')
     project.set_property('anybadge_use_shields', True)

@@ -6,8 +6,8 @@
         "envars": {},
         "expected_result": {
             "exit_code": 0,
-            "remote_tag": "jaron",
-            "remote_version": "1.0.1-pre.2",
+            "remote_tag": null,
+            "remote_version": null,
             "stderr": null,
             "stdout": null
         },
@@ -20,8 +20,8 @@
         "envars": {},
         "expected_result": {
             "exit_code": 1,
-            "remote_tag": "jaron",
-            "remote_version": "1.0.1-pre.2",
+            "remote_tag": null,
+            "remote_version": null,
             "stderr": null,
             "stdout": null
         },
@@ -33,11 +33,25 @@
         "command": "test 1 -eq 1",
         "envars": {},
         "expected_result": {
-            "exit_code": 0,
-            "remote_tag": "jaron",
-            "remote_version": "1.0.1-pre.2",
+            "exit_code": 1,
+            "remote_tag": null,
+            "remote_version": null,
             "stderr": null,
             "stdout": null
+        },
+        "passed": null
+    },
+    {
+        "actual_result": null,
+        "branch_name": "main",
+        "command": "echo $HOME",
+        "envars": {"TEST1": "VALUE1"},
+        "expected_result": {
+            "exit_code": 0,
+            "remote_tag": null,
+            "remote_version": null,
+            "stderr": null,
+            "stdout": "/root"
         },
         "passed": null
     }

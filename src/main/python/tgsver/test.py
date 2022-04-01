@@ -18,14 +18,12 @@ import os
 import json
 import time
 import logging
+from functools import wraps
+from colorama import Style
+from colorama import Fore
 
-from tgsver.utils import run_command
-from tgsver.utils import get_head_tag
-from tgsver.utils import read_file
-from tgsver.utils import get_client
-from tgsver.utils import create_repo
-from tgsver.utils import delete_repo
-from tgsver.utils import clone_repo
+import tgsver.utils as utils
+import tgsver.logs as logs
 from progress1bar import ProgressBar
 
 
@@ -35,17 +33,56 @@ logger = logging.getLogger(__name__)
 class Result:
 
     def __init__(self, stdout=None, stderr=None, exit_code=None, remote_tag=None, remote_version=None):
-        logger.debug('Result constructor')
+        logger.debug('executing Result constructor')
         self.stdout = stdout
         self.stderr = stderr
         self.exit_code = exit_code if exit_code else 0
         self.remote_tag = remote_tag
         self.remote_version = remote_version
 
+    def __eq__(self, other):
+        return (
+            Result.check(self.exit_code, other.exit_code, 'exit_code')
+            and Result.check(self.remote_tag, other.remote_tag, 'remote_tag')
+            and Result.check(self.remote_version, other.remote_version, 'remote_version')
+            and Result.check(self.stdout, other.stdout, 'stdout')
+            and Result.check(self.stderr, other.stderr, 'stderr'))
+
+    @staticmethod
+    def check(value1, value2, attr):
+        # logger.debug(f"checking values of attribute '{attr}'")
+        if not value1:
+            result = True
+        elif not value2:
+            result = False
+        elif isinstance(value1, int):
+            result = value1 == value2
+        else:
+            result = value1 in value2
+        if not result:
+            logger.error(f"check values for attribute '{attr}' failed")
+        return result
+
+    # def __hash__(self):
+    #     # required if modelling an immutable type
+    #     return hash((self.stdout, self.stderr, self.exit_code, self.remote_tag, self.remote_version))
+
+    def __str__(self):
+        string = f"""
+            ------------------------
+            exit_code: {self.exit_code}
+            remote_tag: {self.remote_tag}
+            remote_version: {self.remote_version}
+            stdout: {self.stdout}
+            stderr: {self.stderr}
+            ------------------------"""
+        return '\n'.join([line.strip() for line in string.split('\n') if line])
+
 
 class Test:
 
     def __init__(self, command=None, expected_result=None, envars=None, branch_name=None):
+        logger.debug('executing Test constructor')
         self.command = command
         self.expected_result = expected_result
         self.envars = envars if envars else {}
@@ -55,98 +92,102 @@ class Test:
 
     def execute(self, client, repo_name, repo_dir):
         # execute the command and store the result
+        logger.debug(f"executing test for command '{self.command}'")
         run_command_kwargs = {
-            'cwd': repo_dir,
-            'noop': False
+            'cwd': repo_dir
         }
         if self.envars:
-            run_command_kwargs['env'] = self.envars
-        process = run_command(self.command, **run_command_kwargs)
+            # update not replace current environment variables
+            os_environ = dict(os.environ)
+            os_environ.update(self.envars)
+            run_command_kwargs['env'] = os_environ
+
+        process = utils.run_command(self.command, **run_command_kwargs)
+
         remote_tag = None
         if self.expected_result.remote_tag:
-            remote_tag = get_head_tag(client, repo_name, self.branch_name)
+            remote_tag = utils.get_head_tag(client, repo_name, self.branch_name)
+
         remote_version = None
         if self.expected_result.remote_version:
-            remote_version = read_file(client, repo_name, 'semver', self.branch_name)
-        self.actual_result = Result(stdout=process.stdout, stderr=process.stderr, exit_code=process.returncode, remote_tag=remote_tag, remote_version=remote_version)
-        self.check_result()
+            remote_version = utils.read_file(client, repo_name, 'semver', self.branch_name)
 
-    def check_result(self):
-        # check the result and compare to the expected_result
-        self.passed = (
-            Test.check(self.actual_result.exit_code, self.expected_result.exit_code, 'exit code')
-            and Test.check(self.actual_result.stdout, self.expected_result.stdout, 'stdout')
-            and Test.check(self.actual_result.stderr, self.expected_result.stderr, 'stderr')
-            and Test.check(self.actual_result.remote_tag, self.expected_result.remote_tag, 'remote tag')
-            and Test.check(self.actual_result.remote_version, self.expected_result.remote_version, 'remote version'))
+        self.actual_result = Result(
+            stdout=process.stdout,
+            stderr=process.stderr,
+            exit_code=process.returncode,
+            remote_tag=remote_tag,
+            remote_version=remote_version)
 
-    @staticmethod
-    def check(actual, expected, label):
-        if expected is None:
-            return True
-        if isinstance(expected, int):
-            result = expected == actual
-        else:
-            # expected should be string
-            if actual is None:
-                return False
-            result = re.match(expected, actual) is not None
-        if not result:
-            logger.debug(f'check failed for {label}')
-        return result
+        self.passed = self.expected_result == self.actual_result
+        if not self.passed:
+            logger.error(f"test FAILED for command '{self.command}'")
+            logger.debug(f"Actual:\n{self.actual_result}")
+            logger.debug(f"Expected:\n{self.expected_result}")
 
 
 class Suite:
 
-    def __init__(self, path=None):
-        logger.debug('Suite constructor')
-        self.client = get_client()
-        repo = create_repo(self.client)
+    def __init__(self, path=None, setup_ssh=True, clone_repo=True):
+        logger.debug('executing Suite constructor')
+
+        self.stream_handler = logs.add_stream_handler()
+
+        if setup_ssh:
+            self.ssh_setup()
+
+        self.client = utils.get_client()
+        repo = utils.create_repo(self.client)
         self.repo_name = repo['full_name']
-        self.repo_dir = clone_repo(repo['ssh_url'], repo['name'])
-        self.path = path
+
+        self.repo_dir = None
+        if clone_repo:
+            self.repo_dir = utils.clone_repo(repo['ssh_url'], repo['name'])
+
         self.tests = []
-        if self.path:
-            self.load_tests()
+        if path:
+            self.tests = Suite.load_tests(path)
 
     def __del__(self):
-        logger.debug('Suite destructor')
-        delete_repo(self.client, self.repo_name)
+        logger.debug('executing Suite destructor')
+        if hasattr(self, 'client') and hasattr(self, 'repo_name'):
+            utils.delete_repo(self.client, self.repo_name)
 
-    def load_tests(self):
-        logger.debug(f'loading tests from file {self.path}')
-        if not os.access(self.path, os.R_OK):
-            raise ValueError(f'path {self.path} is not accessible')
-        with open(self.path, 'r') as infile:
-            tests = json.loads(infile.read())
+    @staticmethod
+    def load_tests(path):
+        logger.info(f"Loading tests from path '{path}'")
+        if not os.access(path, os.R_OK):
+            raise ValueError(f"path '{path}' is not accessible")
 
-        for test in tests:
-            expected_result_kwargs = test.pop('expected_result')
-            test.pop('actual_result', None)
-            test.pop('passed', None)
-            test_obj = Test(**test)
-            test_obj.expected_result = Result(**expected_result_kwargs)
-            self.tests.append(test_obj)
+        with open(path, 'r') as infile:
+            json_data = json.loads(infile.read())
 
-    def setup():
-        run_command('eval `ssh-agent`', noop=False)
-        run_command('ssh-add', noop=False)
-        run_command('ssh -T git@github.com', noop=False)
-        run_command(f'cd /{self.repo_name}')
+        tests = []
+        for item in json_data:
+            expected_result_kwargs = item.pop('expected_result')
+            item.pop('actual_result', None)
+            item.pop('passed', None)
+            test = Test(**item)
+            test.expected_result = Result(**expected_result_kwargs)
+            tests.append(test)
+        return tests
+
+    def ssh_setup(self):
+        logger.info('Setting up SSH')
+        utils.run_command('eval `ssh-agent` && ssh-add', raise_if_error=True, shell=True)
+        # utils.run_command('ssh-add', raise_if_error=True)
+        utils.run_command('ssh -T git@github.com')
 
     def execute(self):
-        logger.debug(f'executing {len(self.tests)} tests')
-        with ProgressBar() as pb:
-            pb.total = len(self.tests)
-            # setup()
+        logger.info(f'Executing {len(self.tests)} tests')
+        logs.remove_stream_handler(self.stream_handler)
+        with ProgressBar(total=len(self.tests), completed_message="Test execution complete", clear_alias=True) as pb:
             for index, test in enumerate(self.tests):
-                pb.alias = f'test{index}'
+                test_number = index + 1
+                pb.alias = f"Test{test_number}: {test.command}"
                 test.execute(self.client, self.repo_name, self.repo_dir)
                 pb.count += 1
-            pb.alias = ''
-
-    def tear_down(self):
-        pass
+        logs.add_stream_handler(stream_handler=self.stream_handler)
 
     def summary(self):
         passed = 0
@@ -157,9 +198,11 @@ class Suite:
             else:
                 failed += 1
             # passed += 1 if test.passed else failed += 1
-        print(f'total number of tests: {len(self.tests)}')
-        print(f'passed: {passed}')
-        print(f'failed: {failed}')
+        if any(not test.passed for test in self.tests):
+            print(f"{Style.BRIGHT + Fore.RED}Some Git Semver Tests FAILED{Style.RESET_ALL}")
+        else:
+            print(f"{Style.BRIGHT + Fore.GREEN}All Git Semver Tests PASSED{Style.RESET_ALL}")
+        print(f'Total:{len(self.tests)} Passed:{passed} Failed:{failed}')
 
     def create_tests(self):
         self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))

@@ -91,7 +91,6 @@ class Test:
         self.passed = None
 
     def execute(self, client, repo_name, repo_dir):
-        # execute the command and store the result
         logger.debug(f"executing test for command '{self.command}'")
         run_command_kwargs = {
             'cwd': repo_dir
@@ -102,6 +101,9 @@ class Test:
             os_environ.update(self.envars)
             run_command_kwargs['env'] = os_environ
 
+        # todo
+        # git checkout branch_name
+        # to ensure working in correct branch
         process = utils.run_command(self.command, **run_command_kwargs)
 
         remote_tag = None
@@ -147,6 +149,9 @@ class Suite:
         self.tests = []
         if path:
             self.tests = Suite.load_tests(path)
+            # todo
+            # get all unique branches in tests
+            # create branches in test repo
 
     def __del__(self):
         logger.debug('executing Suite destructor')
@@ -174,8 +179,7 @@ class Suite:
 
     def ssh_setup(self):
         logger.info('Setting up SSH')
-        utils.run_command('eval `ssh-agent` && ssh-add', raise_if_error=True, shell=True)
-        # utils.run_command('ssh-add', raise_if_error=True)
+        utils.run_command('eval `ssh-agent` && ssh-add', expected_exit_codes=[0], shell=True)
         utils.run_command('ssh -T git@github.com')
 
     def execute(self):

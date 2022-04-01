@@ -48,13 +48,13 @@ def delete_repo(client, repo_name):
         client.delete(f'/repos/{repo_name}')
 
 
-def create_branch(client, repo_name):
-    logger.debug(f"creating branch 'branch1' in repository '{repo_name}'")
+def create_branch(client, repo_name, branch_name):
+    logger.debug(f"creating branch '{branch_name}' in repository '{repo_name}'")
     branches = client.get(f'/repos/{repo_name}/git/refs/heads')
     client.post(
         f'/repos/{repo_name}/git/refs',
         json={
-            'ref': 'refs/heads/branch1',
+            'ref': f'refs/heads/{branch_name}',
             'sha': branches[-1]['object']['sha']
         })
 
@@ -118,7 +118,7 @@ def get_head_tag(client, repo_name, branch_name):
             return tag['name']
 
 
-def run_command(command, raise_if_error=False, **kwargs):
+def run_command(command, expected_exit_codes=None, **kwargs):
     """ run command
     """
     logger.debug(f"running command '{command}'")
@@ -128,12 +128,12 @@ def run_command(command, raise_if_error=False, **kwargs):
         logger.debug(f'stdout:\n{process.stdout}')
     if process.stderr:
         logger.debug(f'stderr:\n{process.stderr}')
-    if raise_if_error and process.returncode != 0:
+    if expected_exit_codes and process.returncode not in expected_exit_codes:
         raise Exception(f"command '{command}' did not execute successfully")
     return process
 
 
 def clone_repo(ssh_url, repo_name):
     logger.info(f"Cloning repo '{ssh_url}' to directory '{repo_name}'")
-    run_command(f'git clone {ssh_url} {repo_name}', raise_if_error=True)
+    run_command(f'git clone {ssh_url} {repo_name}', expected_exit_codes=[0])
     return repo_name

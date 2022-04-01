@@ -28,19 +28,16 @@ def main():
     suite = None
     try:
         suite = test.Suite(path='tests.json')
-        # suite = test.Suite(path='t.json', setup_ssh=False, clone_repo=False)
         suite.execute()
         suite.summary()
 
     except Exception as exception:
         logger.error(exception)
-        # print(f'ERROR: {exception}')
         sys.exit(1)
 
     finally:
         if suite is not None:
             del suite
-            # pass
 
 
 if __name__ == '__main__':

@@ -13,64 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import sys
-import time
 import logging
-
-from tgsver.test import Suite
+import tgsver.logs as logs
+import tgsver.test as test
 
 logger = logging.getLogger(__name__)
-
-
-def setup(repo_name):
-    # run_command(f'git clone {repo_name}')
-    # run_command('chown root:root /root/.ssh/config'
-    # run_command('eval `ssh-agent`')
-    # run_command('ssh-add')
-    # run_command('ssh -T git@github.com')
-    # run_command(f'cd {repo_name}')
-    pass
-
-
-def load_tests():
-    pass
-
-
-def execute_tests(tests):
-    pass
-
-
-def write_summary(results):
-    pass
-
-
-def setup_logging():
-    """ configure logging and create logfile if specified
-    """
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
-
-    name = os.path.basename(sys.argv[0])
-    file_handler = logging.FileHandler(f'{name}.log')
-    file_formatter = logging.Formatter("%(asctime)s %(name)s [%(funcName)s] %(levelname)s %(message)s")
-    file_handler.setFormatter(file_formatter)
-    root_logger.addHandler(file_handler)
 
 
 def main():
     """ main function
     """
-    setup_logging()
+    logs.setup_logging()
     suite = None
     try:
-        suite = Suite(path='tests.json')
+        suite = test.Suite(path='tests.json')
         suite.execute()
         suite.summary()
 
     except Exception as exception:
         logger.error(exception)
-        print(f'ERROR: {exception}')
         sys.exit(1)
 
     finally:

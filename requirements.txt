@@ -1,2 +1,3 @@
 github3api
 progress1bar
+colorama

@@ -36,25 +36,25 @@ def get_client():
 
 
 def create_repo(client):
-    repo_name = 'tgsver-' + time.strftime('%m-%d-%Y-%H-%M-%S')
-    logger.debug(f'creating test repository: {repo_name}')
+    repo_name = 'test-git-semver-' + time.strftime('%m-%d-%Y-%H-%M-%S')
+    logger.info(f"Creating GitHub repository '{repo_name}'")
     response = client.post('/user/repos', json={'name': repo_name, 'auto_init': True})
     return response
 
 
 def delete_repo(client, repo_name):
-    logger.debug(f'deleting test repository: {repo_name}')
+    logger.info(f"Deleting GitHub repository '{repo_name}'")
     if client and repo_name:
         client.delete(f'/repos/{repo_name}')
 
 
-def create_branch(client, repo_name):
-    logger.debug(f'creating branch branch1 on repository {repo_name}')
+def create_branch(client, repo_name, branch_name):
+    logger.debug(f"creating branch '{branch_name}' in repository '{repo_name}'")
     branches = client.get(f'/repos/{repo_name}/git/refs/heads')
     client.post(
         f'/repos/{repo_name}/git/refs',
         json={
-            'ref': 'refs/heads/branch1',
+            'ref': f'refs/heads/{branch_name}',
             'sha': branches[-1]['object']['sha']
         })
 
@@ -62,12 +62,12 @@ def create_branch(client, repo_name):
 def remove_branch(client, repo_name, branch_name):
     """ removes branch from github repository
     """
-    logger.debug(f'removing branch {branch_name} from repository {repo_name}')
+    logger.debug(f"removing branch '{branch_name}' from repository '{repo_name}'")
     client.delete(f'/repos/{repo_name}/git/refs/heads/{branch_name}')
 
 
 def branch_exists(client, repo_name, branch_name):
-    logger.debug(f'checking if branch {branch_name} exists on repository {repo_name}')
+    logger.debug(f"checking if branch '{branch_name} 'exists in repository '{repo_name}'")
     branches = client.get(f'/repos/{repo_name}/branches')
     for branch in branches:
         if branch['name'] == branch_name:
@@ -76,19 +76,19 @@ def branch_exists(client, repo_name, branch_name):
 
 
 def get_file_url(client, repo_name, branch_name, file_name):
-    logger.debug(f'retrieving {file_name} url from repository {repo_name} on branch {branch_name}')
+    logger.debug(f"retrieving '{file_name}' url from repository '{repo_name}' branch '{branch_name}'")
     if branch_exists(client, repo_name, branch_name):
         results = client.get(f'/repos/{repo_name}/git/trees/{branch_name}?recursive=1')
         for result in results['tree']:
             if result['path'] == file_name:
                 return result['url']
-        logger.debug(f'the file {file_name} does not exist in branch {branch_name} in repo {repo_name}')
+        logger.debug(f"the file '{file_name}' does not exist in branch '{branch_name}' in repo '{repo_name}'")
     else:
-        logger.debug(f'the branch {branch_name} does not exist in repo {repo_name}')
+        logger.debug(f"the branch '{branch_name}' does not exist in repo '{repo_name}'")
 
 
 def read_file(client, repo_name, branch_name, file_name):
-    logger.debug(f'reading file content from {file_name} from repository {repo_name} on branch {branch_name}')
+    logger.debug(f"reading content from file '{file_name}' in repository '{repo_name}' branch '{branch_name}'")
     file_url = get_file_url(client, repo_name, branch_name, file_name)
     if file_url:
         results = client.get(file_url)
@@ -100,7 +100,7 @@ def read_file(client, repo_name, branch_name, file_name):
 
 
 def is_head_tagged(client, repo_name, branch_name):
-    logger.debug(f'checking if head from repository {repo_name} on {branch_name} is tagged')
+    logger.debug(f"checking if head in repository '{repo_name}' branch '{branch_name}' is tagged")
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
     for tag in tags:
@@ -110,7 +110,7 @@ def is_head_tagged(client, repo_name, branch_name):
 
 
 def get_head_tag(client, repo_name, branch_name):
-    logger.debug(f'retrieving headtag from repository {repo_name} on branch {branch_name}')
+    logger.debug(f"retrieving head tag from repository '{repo_name}' branch '{branch_name}'")
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
     for tag in tags:
@@ -118,32 +118,22 @@ def get_head_tag(client, repo_name, branch_name):
             return tag['name']
 
 
-def run_command(command, noop=True, **kwargs):
+def run_command(command, expected_exit_codes=None, **kwargs):
     """ run command
     """
-    logger.debug(f'run command: {command}')
-    if not noop:
-        process = subprocess.run(command.split(' '), capture_output=True, text=True, **kwargs)
-        logger.debug(f"return code: {process.returncode}")
-        if process.stdout:
-            logger.debug(f'stdout:\n{process.stdout}')
-        if process.stderr:
-            logger.debug(f'stderr:\n{process.stderr}')
-        return process
-    else:
-        time.sleep(get_random())
-        logger.debug("return code: 0")
-
-
-def get_random():
-    """ return random float
-    """
-    choices = [round(number * .05, 2) for number in range(20) if number > 0]
-    return secrets.choice(choices)
+    logger.debug(f"running command '{command}'")
+    process = subprocess.run(command.split(' '), capture_output=True, text=True, **kwargs)
+    logger.debug(f"return code: {process.returncode}")
+    if process.stdout:
+        logger.debug(f'stdout:\n{process.stdout}')
+    if process.stderr:
+        logger.debug(f'stderr:\n{process.stderr}')
+    if expected_exit_codes and process.returncode not in expected_exit_codes:
+        raise Exception(f"command '{command}' did not execute successfully")
+    return process
 
 
 def clone_repo(ssh_url, repo_name):
-    process = run_command(f'git clone {ssh_url} {repo_name}', noop=False)
-    if process.returncode != 0:
-        Exception('ERROR: unable to clone ssh-url')
+    logger.info(f"Cloning repo '{ssh_url}' to directory '{repo_name}'")
+    run_command(f'git clone {ssh_url} {repo_name}', expected_exit_codes=[0])
     return repo_name

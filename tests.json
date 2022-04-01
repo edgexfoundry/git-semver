@@ -258,5 +258,40 @@
             "remote_version": "2.0.0",
             "stdout": "2.0.0"
         }
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver init",
+        "expected_result": {
+            "exit_code": 0,
+            "stdout": "0.0.0"
+        }
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver bump pre",
+        "expected_result": {
+            "exit_code": 0,
+            "stdout": "0.0.0-pre.1"
+        }
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver push",
+        "expected_result": {
+            "exit_code": 0,
+            "remote_version": "0.0.0-pre.1",
+            "stdout": "0.0.0-pre.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "exit_code": 0,
+            "remote_tag": "1.0.0-dev.2",
+            "remote_version": "2.0.0",
+            "stdout": "2.0.0"
+        }
     }
 ]

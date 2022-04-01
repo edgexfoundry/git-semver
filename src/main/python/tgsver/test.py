@@ -101,9 +101,7 @@ class Test:
             os_environ.update(self.envars)
             run_command_kwargs['env'] = os_environ
 
-        # todo
-        # git checkout branch_name
-        # to ensure working in correct branch
+        utils.run_command(f'git checkout {self.branch_name}', **run_command_kwargs)
         process = utils.run_command(self.command, **run_command_kwargs)
 
         remote_tag = None
@@ -142,16 +140,26 @@ class Suite:
         repo = utils.create_repo(self.client)
         self.repo_name = repo['full_name']
 
-        self.repo_dir = None
-        if clone_repo:
-            self.repo_dir = utils.clone_repo(repo['ssh_url'], repo['name'])
-
         self.tests = []
         if path:
             self.tests = Suite.load_tests(path)
-            # todo
-            # get all unique branches in tests
-            # create branches in test repo
+            branch_names = self.get_branch_names()
+            for branch_name in branch_names:
+                utils.create_branch(self.client, self.repo_name, branch_name)
+
+        self.repo_dir = None
+        if clone_repo:
+            # clone repo after test branches have been created in test repo
+            self.repo_dir = utils.clone_repo(repo['ssh_url'], repo['name'])
+
+    def get_branch_names(self):
+        branch_names = []
+        for test in self.tests:
+            if test.branch_name not in branch_names:
+                branch_names.append(test.branch_name)
+        if 'main' in branch_names:
+            branch_names.remove('main')
+        return branch_names
 
     def __del__(self):
         logger.debug('executing Suite destructor')

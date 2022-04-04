@@ -277,10 +277,19 @@
     },
     {
         "branch_name": "test1",
+        "command": "git semver tag --force",
+        "expected_result": {
+            "exit_code": 0,
+            "stdout": "0.0.0-pre.1"
+        }
+    },
+    {
+        "branch_name": "test1",
         "command": "git semver push",
         "expected_result": {
             "exit_code": 0,
             "remote_version": "0.0.0-pre.1",
+            "remote_tag": "0.0.0-pre.1",
             "stdout": "0.0.0-pre.1"
         }
     },

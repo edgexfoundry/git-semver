@@ -18,12 +18,11 @@ import os
 import json
 import time
 import logging
-from functools import wraps
 from colorama import Style
 from colorama import Fore
-
-import tgsver.utils as utils
-import tgsver.logs as logs
+import tgsver.github as github
+import tgsver.run as run
+import tgsver.log as log
 from progress1bar import ProgressBar
 
 
@@ -50,7 +49,6 @@ class Result:
 
     @staticmethod
     def check(value1, value2, attr):
-        # logger.debug(f"checking values of attribute '{attr}'")
         if not value1:
             result = True
         elif not value2:
@@ -62,10 +60,6 @@ class Result:
         if not result:
             logger.error(f"check values for attribute '{attr}' failed")
         return result
-
-    # def __hash__(self):
-    #     # required if modelling an immutable type
-    #     return hash((self.stdout, self.stderr, self.exit_code, self.remote_tag, self.remote_version))
 
     def __str__(self):
         string = f"""
@@ -101,27 +95,23 @@ class Test:
             os_environ.update(self.envars)
             run_command_kwargs['env'] = os_environ
 
-        utils.run_command(f'git checkout {self.branch_name}', **run_command_kwargs)
-        process = utils.run_command(self.command, **run_command_kwargs)
+        run.run_command(f'git checkout {self.branch_name}', **run_command_kwargs)
+        process = run.run_command(self.command, **run_command_kwargs)
 
-        remote_tag = None
+        actual_result_kwargs = {
+            'stdout': process.stdout,
+            'stderr': process.stderr,
+            'exit_code': process.returncode
+        }
         if self.expected_result.remote_tag:
-            remote_tag = utils.get_head_tag(client, repo_name, self.branch_name)
-
-        remote_version = None
+            actual_result_kwargs['remote_tag'] = github.get_head_tag(client, repo_name, self.branch_name)
         if self.expected_result.remote_version:
-            remote_version = utils.read_file(client, repo_name, 'semver', self.branch_name)
-
-        self.actual_result = Result(
-            stdout=process.stdout,
-            stderr=process.stderr,
-            exit_code=process.returncode,
-            remote_tag=remote_tag,
-            remote_version=remote_version)
+            actual_result_kwargs['remote_version'] = github.read_file(client, repo_name, 'semver', self.branch_name)
+        self.actual_result = Result(**actual_result_kwargs)
 
         self.passed = self.expected_result == self.actual_result
         if not self.passed:
-            logger.error(f"test FAILED for command '{self.command}'")
+            logger.error(f"Failed for command '{self.command}'")
             logger.debug(f"Actual:\n{self.actual_result}")
             logger.debug(f"Expected:\n{self.expected_result}")
 
@@ -132,26 +122,27 @@ class Suite:
         logger.debug('executing Suite constructor')
 
         self.keep_repo = keep_repo
-        self.stream_handler = logs.add_stream_handler()
+        self.stream_handler = log.add_stream_handler()
 
         if setup_ssh:
             self.ssh_setup()
 
-        self.client = utils.get_client()
-        repo = utils.create_repo(self.client)
+        self.client = github.get_client()
+        repo = github.create_repo(self.client)
         self.repo_name = repo['full_name']
 
         self.tests = []
         if path:
             self.tests = Suite.load_tests(path)
+            # create all branches in repo required by tests
             branch_names = self.get_branch_names()
             for branch_name in branch_names:
-                utils.create_branch(self.client, self.repo_name, branch_name)
+                github.create_branch(self.client, self.repo_name, branch_name)
 
         self.repo_dir = None
         if clone_repo:
             # clone repo after test branches have been created in test repo
-            self.repo_dir = utils.clone_repo(repo['ssh_url'], repo['name'])
+            self.repo_dir = github.clone_repo(repo['ssh_url'], repo['name'])
 
     def get_branch_names(self):
         branch_names = []
@@ -165,7 +156,7 @@ class Suite:
     def __del__(self):
         logger.debug('executing Suite destructor')
         if not self.keep_repo and hasattr(self, 'client') and hasattr(self, 'repo_name'):
-            utils.delete_repo(self.client, self.repo_name)
+            github.delete_repo(self.client, self.repo_name)
 
     @staticmethod
     def load_tests(path):
@@ -174,10 +165,10 @@ class Suite:
             raise ValueError(f"path '{path}' is not accessible")
 
         with open(path, 'r') as infile:
-            json_data = json.loads(infile.read())
+            data = json.loads(infile.read())
 
         tests = []
-        for item in json_data:
+        for item in data:
             expected_result_kwargs = item.pop('expected_result')
             item.pop('actual_result', None)
             item.pop('passed', None)
@@ -188,21 +179,22 @@ class Suite:
 
     def ssh_setup(self):
         logger.info('Setting up SSH')
-        utils.run_command('eval `ssh-agent` && ssh-add', expected_exit_codes=[0], shell=True)
-        utils.run_command('ssh -T git@github.com')
+        run.run_command('eval `ssh-agent` && ssh-add', expected_exit_codes=[0], shell=True)
+        run.run_command('ssh -T git@github.com')
 
     def execute(self):
         logger.info(f'Executing {len(self.tests)} tests')
-        logs.remove_stream_handler(self.stream_handler)
+        log.remove_stream_handler(self.stream_handler)
         with ProgressBar(total=len(self.tests), completed_message="Test execution complete", clear_alias=True) as pb:
             for index, test in enumerate(self.tests):
                 test_number = index + 1
                 pb.alias = f"Test{test_number}: {test.command}"
                 test.execute(self.client, self.repo_name, self.repo_dir)
                 pb.count += 1
-        logs.add_stream_handler(stream_handler=self.stream_handler)
+        log.add_stream_handler(stream_handler=self.stream_handler)
 
     def summary(self):
+        # todo: find better way to do this
         passed = 0
         failed = 0
         for test in self.tests:
@@ -218,37 +210,6 @@ class Suite:
         print(f'Total:{len(self.tests)} Passed:{passed} Failed:{failed}')
         with open('test-git-semver-results.json', 'w') as out_file:
             json.dump(self.tests, out_file, cls=TestEncoder, indent=4)
-
-    def create_tests(self):
-        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
-        self.tests.append(Test(command='git-semver init', expected_result=Result(stdout='0.0.0')))
-        self.tests.append(Test(command='git-semver init --version=1.0.0-dev.1 --force', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git-semver push', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='rm -rf .semver', expected_result=Result()))
-        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
-        self.tests.append(Test(command='git-semver init', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='1.0.0-dev.1')))
-        self.tests.append(Test(command='git-semver tag', expected_result=Result(stdout='1.0.0-dev.1', remote_tag='1.0.0-dev.1', remote_version='1.0.0-dev.1'), branch_name='main'))
-        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='1.0.0-dev.2'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git-semver push', expected_result=Result(stdout='1.0.0-dev.2')))
-        self.tests.append(Test(command='git-semver tag', expected_result=Result(stdout='is already tagged with', exit_code=1, remote_tag='1.0.0-dev.1', remote_version='1.0.0-dev.1'), branch_name='main'))
-        self.tests.append(Test(command='git-semver tag --force', expected_result=Result(stdout='1.0.0-dev.2', remote_tag='1.0.0-dev.2', remote_version='1.0.0-dev.2'), branch_name='main'))
-        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='1.0.0-dev.3'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git-semver push', expected_result=Result(stdout='1.0.0-dev.3')))
-        self.tests.append(Test(command='rm -rf .semver', expected_result=Result()))
-        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='the semver branch does not exist', exit_code=1)))
-        self.tests.append(Test(command='git-semver init', expected_result=Result(stdout='1.0.0-dev.3')))
-        self.tests.append(Test(command='git-semver', expected_result=Result(stdout='1.0.0-dev.3')))
-        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='1.0.0-dev.4'), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git-semver bump pre --prefix=rc', expected_result=Result(stdout='mismatch between current prerelease dev and bump rc', exit_code=1)))
-        self.tests.append(Test(command='git-semver bump patch', expected_result=Result(stdout='1.0.1')))
-        self.tests.append(Test(command='git-semver bump minor', expected_result=Result(stdout='1.1.0')))
-        self.tests.append(Test(command='git-semver bump major', expected_result=Result(stdout='2.0.0')))
-        self.tests.append(Test(command='git-semver bump pre --prefix=tst', expected_result=Result(stdout='2.0.0-tst.1')))
-        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='mismatch between current prerelease tst and bump dev', exit_code=1), envars={'SEMVER_PRE_PREFIX': 'dev'}))
-        self.tests.append(Test(command='git-semver bump pre', expected_result=Result(stdout='2.0.0-tst.2'), envars={'SEMVER_PRE_PREFIX': 'tst'}))
-        self.tests.append(Test(command='git-semver bump final', expected_result=Result(stdout='2.0.0')))
 
 
 class TestEncoder(json.JSONEncoder):

@@ -30,7 +30,7 @@ name = 'tgsver'
 authors = [
     Author('Jaron Bauers', 'jaron.bauers@intel.com'),
     Author('Emilio Reyes', 'emilio.reyes@intel.com')]
-summary = 'A Python script to automate the functional testing of the git-semver capability'
+summary = 'A Python script to execute git-semver functional tests'
 url = 'https://github.com/jaron-bauers/test-git-semver'
 version = '0.1.0'
 default_task = [
@@ -56,27 +56,7 @@ def set_properties(project):
     project.set_property('flake8_ignore', 'E501, W503, F401, F841')
     project.build_depends_on('mock')
     project.depends_on_requirements('requirements.txt')
-    project.set_property('distutils_readme_description', True)
-    project.set_property('distutils_description_overwrite', True)
-    project.set_property('distutils_upload_skip_existing', True)
     project.set_property('distutils_console_scripts', ['test-git-semver = tgsver.cli:main'])
-    project.set_property('distutils_classifiers', [
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Environment :: Other Environment',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: System :: Networking',
-        'Topic :: System :: Systems Administration'])
     project.set_property('radon_break_build_average_complexity_threshold', 3.6)
     project.set_property('radon_break_build_complexity_threshold', 14)
     project.set_property('bandit_break_build', True)

@@ -15,9 +15,9 @@
 
 import os
 import sys
+import logging
 from colorama import Style
 from colorama import Fore
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class ColoredFormatter(logging.Formatter):
 
 
 def setup_logging():
-    """ configure logging and create logfile if specified
+    """ configure logging and create logfile
     """
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
@@ -53,7 +53,7 @@ def setup_logging():
 
 
 def add_stream_handler(stream_handler=None):
-    """ add stream handler to logging
+    """ add stream handler to logging for a custom colored formatter
     """
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)

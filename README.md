@@ -4,7 +4,7 @@
 [![python](https://img.shields.io/badge/python-3.9-teal)](https://www.python.org/downloads/)
 # test-git-semver
 
-A Python module and CLI used for testing git semver functionality.
+A Python script to execute git-semver functional tests.
 
 ## Installation
 The easiest way to consume this module is through Docker by building and running the Docker image as described below.
@@ -25,14 +25,14 @@ A CLI to execute tests for git semver functionality.
 
 optional arguments:
   -h, --help   show this help message and exit
-  --keep_repo  does not delete test repo from GitHub after testing
+  --keep_repo  do not delete test repo from GitHub after testing
 ```  
 
 ### Environment Variables
 
 * `GH_TOKEN_PSW` - User GitHub authentication token
 
-**NOTE: Preference is to store password in keyring instead of environment variable**
+**Note**: the `http[s]_proxy` and `ALL_PROXY` environment variables referenced in the Docker commands below are only required if executing behind a proxy server
 
 ## Execution
 
@@ -63,8 +63,6 @@ docker container run \
 -v $HOME/.ssh:/root/.ssh \
 tgsver:latest bash
 ```
-
-**Note**: the `http[s]_proxy` environment variables are only required if executing behind a proxy server
 
 ## Development
 

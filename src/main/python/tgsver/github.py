@@ -16,10 +16,8 @@
 import os
 import time
 import base64
-import secrets
-import subprocess
 import logging
-
+import tgsver.run as run
 from github3api import GitHubAPI
 
 logger = logging.getLogger(__name__)
@@ -113,27 +111,14 @@ def get_head_tag(client, repo_name, branch_name):
     logger.debug(f"retrieving head tag from repository '{repo_name}' branch '{branch_name}'")
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
+    head_tags = []
     for tag in tags:
         if tag['commit']['sha'] == latest_commit_sha:
-            return tag['name']
-
-
-def run_command(command, expected_exit_codes=None, **kwargs):
-    """ run command
-    """
-    logger.debug(f"running command '{command}'")
-    process = subprocess.run(command.split(' '), capture_output=True, text=True, **kwargs)
-    logger.debug(f"return code: {process.returncode}")
-    if process.stdout:
-        logger.debug(f'stdout:\n{process.stdout}')
-    if process.stderr:
-        logger.debug(f'stderr:\n{process.stderr}')
-    if expected_exit_codes and process.returncode not in expected_exit_codes:
-        raise Exception(f"command '{command}' did not execute successfully")
-    return process
+            head_tags.append(tag['name'])
+    return head_tags
 
 
 def clone_repo(ssh_url, repo_name):
     logger.info(f"Cloning repo '{ssh_url}' to directory '{repo_name}'")
-    run_command(f'git clone {ssh_url} {repo_name}', expected_exit_codes=[0])
+    run.run_command(f'git clone {ssh_url} {repo_name}', expected_exit_codes=[0])
     return repo_name

@@ -58,7 +58,7 @@ class Result:
         else:
             result = value1 in value2
         if not result:
-            logger.error(f"check values for attribute '{attr}' failed")
+            logger.error(f"check values for attribute '{attr}' failed - value1:{value1} - value2:{value2}")
         return result
 
     def __str__(self):

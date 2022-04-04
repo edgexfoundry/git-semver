@@ -111,9 +111,11 @@ def get_head_tag(client, repo_name, branch_name):
     logger.debug(f"retrieving head tag from repository '{repo_name}' branch '{branch_name}'")
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
+    head_tags = []
     for tag in tags:
         if tag['commit']['sha'] == latest_commit_sha:
-            return tag['name']
+            head_tags.append(tag['name'])
+    return head_tags
 
 
 def clone_repo(ssh_url, repo_name):

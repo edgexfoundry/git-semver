@@ -53,7 +53,8 @@ def setup_logging():
 
 
 def add_stream_handler(stream_handler=None):
-    """ add stream handler to logging for a custom colored formatter
+    """ add stream handler to root logger if provided
+        if stream handler is not provided then one will be created using the colored formatter
     """
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
@@ -67,7 +68,7 @@ def add_stream_handler(stream_handler=None):
 
 
 def remove_stream_handler(stream_handler):
-    """ remove stream handler from logging
+    """ remove provided stream handler from root logger
     """
     root_logger = logging.getLogger()
     root_logger.removeHandler(stream_handler)

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import shlex
 import subprocess
 import logging
 
@@ -20,10 +21,14 @@ logger = logging.getLogger(__name__)
 
 
 def run_command(command, expected_exit_codes=None, **kwargs):
-    """ run command
+    """ run the specified command using subprocess run
+        any additional key word arguments provided will be passed along to the subprocess run method
+        if expected_exit_codes are provided the return code of the process that is invoked will
+        be checked and an Exception will be raised if the process return code is not in the
+        expected_exit_codes
     """
     logger.debug(f"running command '{command}'")
-    process = subprocess.run(command.split(' '), capture_output=True, text=True, **kwargs)
+    process = subprocess.run(shlex.split(command, posix=True), capture_output=True, text=True, **kwargs)
     logger.debug(f"return code: {process.returncode}")
     if process.stdout:
         logger.debug(f'stdout:\n{process.stdout}')

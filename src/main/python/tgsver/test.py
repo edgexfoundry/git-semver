@@ -25,13 +25,15 @@ import tgsver.run as run
 import tgsver.log as log
 from progress1bar import ProgressBar
 
-
 logger = logging.getLogger(__name__)
 
 
 class Result:
-
+    """  represents a Test Result object
+    """
     def __init__(self, stdout=None, stderr=None, exit_code=None, remote_tag=None, remote_version=None):
+        """ Result constructor
+        """
         logger.debug('executing Result constructor')
         self.stdout = stdout
         self.stderr = stderr
@@ -40,6 +42,8 @@ class Result:
         self.remote_version = remote_version
 
     def __eq__(self, other):
+        """ allows equality comparisons between two Result objects
+        """
         return (
             Result.check(self.exit_code, other.exit_code, 'exit_code')
             and Result.check(self.remote_tag, other.remote_tag, 'remote_tag')
@@ -49,6 +53,8 @@ class Result:
 
     @staticmethod
     def check(value1, value2, attr):
+        """ custom comparison method to check if the provided two values are equal
+        """
         if not value1:
             result = True
         elif not value2:
@@ -62,6 +68,8 @@ class Result:
         return result
 
     def __str__(self):
+        """ represent Result object as a string
+        """
         string = f"""
             ------------------------
             exit_code: {self.exit_code}
@@ -74,18 +82,21 @@ class Result:
 
 
 class Test:
-
+    """  represents a Test object
+    """
     def __init__(self, command=None, expected_result=None, envars=None, branch_name=None):
+        """ Test constructor
+        """
         logger.debug('executing Test constructor')
         self.command = command
         self.expected_result = expected_result
         self.envars = envars if envars else {}
+        # assumes main is the default branch
         self.branch_name = branch_name if branch_name else 'main'
         self.actual_result = None
         self.passed = None
 
-    def execute(self, client, repo_name, repo_dir):
-        logger.debug(f"executing test for command '{self.command}'")
+    def get_run_command_kwargs(self, repo_dir):
         run_command_kwargs = {
             'cwd': repo_dir
         }
@@ -94,9 +105,22 @@ class Test:
             os_environ = dict(os.environ)
             os_environ.update(self.envars)
             run_command_kwargs['env'] = os_environ
+        return run_command_kwargs
 
+    def execute(self, client, repo_name, repo_dir):
+        """ execute the test
+        """
+        logger.debug(f"executing test for command '{self.command}'")
+        run_command_kwargs = self.get_run_command_kwargs(repo_dir)
+
+        # ensure the correct branch is checked out
         run.run_command(f'git checkout {self.branch_name}', **run_command_kwargs)
-        process = run.run_command(self.command, **run_command_kwargs)
+        if self.command == 'create-a-commit':
+            # special test directive to create an empty commit
+            run.run_command("git commit --allow-empty -m 'empty commit'", cwd=repo_dir)
+            process = run.run_command(f'git push origin {self.branch_name}', cwd=repo_dir)
+        else:
+            process = run.run_command(self.command, **run_command_kwargs)
 
         actual_result_kwargs = {
             'stdout': process.stdout,
@@ -117,8 +141,11 @@ class Test:
 
 
 class Suite:
-
-    def __init__(self, path=None, keep_repo=None, setup_ssh=True, clone_repo=True):
+    """  represents a Test Suite object
+    """
+    def __init__(self, path=None, keep_repo=False, setup_ssh=True, clone_repo=True):
+        """ Suite constructor
+        """
         logger.debug('executing Suite constructor')
 
         self.keep_repo = keep_repo
@@ -145,21 +172,30 @@ class Suite:
             self.repo_dir = github.clone_repo(repo['ssh_url'], repo['name'])
 
     def get_branch_names(self):
+        """ find and return all branch names found in tests
+            remove 'main' from the returned list
+        """
         branch_names = []
         for test in self.tests:
             if test.branch_name not in branch_names:
                 branch_names.append(test.branch_name)
+        # todo: instead of main should be default branch
         if 'main' in branch_names:
             branch_names.remove('main')
         return branch_names
 
     def __del__(self):
+        """ Suite destructor method
+            delete the GitHub repo
+        """
         logger.debug('executing Suite destructor')
         if not self.keep_repo and hasattr(self, 'client') and hasattr(self, 'repo_name'):
             github.delete_repo(self.client, self.repo_name)
 
     @staticmethod
     def load_tests(path):
+        """ convert data read in from path into list of Test objects and return list
+        """
         logger.info(f"Loading tests from path '{path}'")
         if not os.access(path, os.R_OK):
             raise ValueError(f"path '{path}' is not accessible")
@@ -169,7 +205,7 @@ class Suite:
 
         tests = []
         for item in data:
-            expected_result_kwargs = item.pop('expected_result')
+            expected_result_kwargs = item.pop('expected_result', {})
             item.pop('actual_result', None)
             item.pop('passed', None)
             test = Test(**item)
@@ -178,11 +214,15 @@ class Suite:
         return tests
 
     def ssh_setup(self):
+        """ setup ssh
+        """
         logger.info('Setting up SSH')
         run.run_command('eval `ssh-agent` && ssh-add', expected_exit_codes=[0], shell=True)
         run.run_command('ssh -T git@github.com')
 
     def execute(self):
+        """ execute Suite tests
+        """
         logger.info(f'Executing {len(self.tests)} tests')
         log.remove_stream_handler(self.stream_handler)
         with ProgressBar(total=len(self.tests), completed_message="Test execution complete", clear_alias=True) as pb:
@@ -194,7 +234,8 @@ class Suite:
         log.add_stream_handler(stream_handler=self.stream_handler)
 
     def summary(self):
-        # todo: find better way to do this
+        """ determine and print test summary to screen and write test results to JSON file
+        """
         passed = 0
         failed = 0
         for test in self.tests:
@@ -202,17 +243,19 @@ class Suite:
                 passed += 1
             else:
                 failed += 1
-            # passed += 1 if test.passed else failed += 1
-        if any(not test.passed for test in self.tests):
+        # print summary to screen
+        if failed:
             print(f"{Style.BRIGHT + Fore.RED}Some Git Semver Tests FAILED{Style.RESET_ALL}")
         else:
             print(f"{Style.BRIGHT + Fore.GREEN}All Git Semver Tests PASSED{Style.RESET_ALL}")
         print(f'Total:{len(self.tests)} Passed:{passed} Failed:{failed}')
+        # write results to json file
         with open('test-git-semver-results.json', 'w') as out_file:
             json.dump(self.tests, out_file, cls=TestEncoder, indent=4)
 
 
 class TestEncoder(json.JSONEncoder):
-
+    """ JSONEncoder class that enables test data to be serialized
+    """
     def default(self, obj):
-        return obj.__dict__
+        return obj.__dict__  # pragma: no cover

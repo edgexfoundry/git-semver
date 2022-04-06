@@ -20,7 +20,7 @@ from pybuilder.core import Author
 use_plugin('python.core')
 use_plugin('python.unittest')
 use_plugin('python.flake8')
-# use_plugin('python.coverage')
+use_plugin('python.coverage')
 use_plugin('python.distutils')
 use_plugin('pypi:pybuilder_radon')
 use_plugin('pypi:pybuilder_bandit')
@@ -47,7 +47,7 @@ description = summary
 @init
 def set_properties(project):
     project.set_property('unittest_module_glob', 'test_*.py')
-    project.set_property('coverage_break_build', True)
+    project.set_property('coverage_break_build', False)
     project.set_property('flake8_max_line_length', 120)
     project.set_property('flake8_verbose_output', True)
     project.set_property('flake8_break_build', True)

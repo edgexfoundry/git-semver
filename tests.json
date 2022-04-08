@@ -1,0 +1,277 @@
+[
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "exit_code": 1,
+            "stdout": "the semver branch does not exist"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver init",
+        "expected_result": {
+            "stdout": "0.0.0"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver init --version=1.0.0-dev.1 --force",
+        "expected_result": {
+            "stdout": "1.0.0-dev.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "stdout": "1.0.0-dev.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver push",
+        "expected_result": {
+            "remote_version": "1.0.0-dev.1",
+            "stdout": "1.0.0-dev.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "rm -rf .semver"
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "exit_code": 1,
+            "stdout": "the semver branch does not exist"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver init",
+        "expected_result": {
+            "stdout": "1.0.0-dev.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "stdout": "1.0.0-dev.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver tag",
+        "expected_result": {
+            "stdout": "1.0.0-dev.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre",
+        "envars": {
+            "SEMVER_PRE_PREFIX": "dev"
+        },
+        "expected_result": {
+            "stdout": "1.0.0-dev.2"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver push",
+        "expected_result": {
+            "remote_tag": "v1.0.0-dev.1",
+            "remote_version": "1.0.0-dev.2",
+            "stdout": "1.0.0-dev.2"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver tag",
+        "expected_result": {
+            "exit_code": 1,
+            "stdout": "is already tagged with"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver tag --force",
+        "expected_result": {
+            "stdout": "1.0.0-dev.2"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre",
+        "envars": {
+            "SEMVER_PRE_PREFIX": "dev"
+        },
+        "expected_result": {
+            "stdout": "1.0.0-dev.3"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver push",
+        "expected_result": {
+            "remote_tag": "v1.0.0-dev.2",
+            "remote_version": "1.0.0-dev.3",
+            "stdout": "1.0.0-dev.3"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "rm -rf .semver"
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "exit_code": 1,
+            "stdout": "the semver branch does not exist"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver init",
+        "expected_result": {
+            "stdout": "1.0.0-dev.3"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "stdout": "1.0.0-dev.3"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre",
+        "envars": {
+            "SEMVER_PRE_PREFIX": "dev"
+        },
+        "expected_result": {
+            "stdout": "1.0.0-dev.4"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre --prefix=rc",
+        "expected_result": {
+            "exit_code": 1,
+            "stdout": "mismatch between current prerelease dev and bump rc"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump patch",
+        "expected_result": {
+            "stdout": "1.0.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump minor",
+        "expected_result": {
+            "stdout": "1.1.0"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump major",
+        "expected_result": {
+            "stdout": "2.0.0"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre --prefix=tst",
+        "expected_result": {
+            "stdout": "2.0.0-tst.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre",
+        "envars": {
+            "SEMVER_PRE_PREFIX": "dev"
+        },
+        "expected_result": {
+            "exit_code": 1,
+            "stdout": "mismatch between current prerelease tst and bump dev"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump pre",
+        "envars": {
+            "SEMVER_PRE_PREFIX": "tst"
+        },
+        "expected_result": {
+            "stdout": "2.0.0-tst.2"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver bump final",
+        "expected_result": {
+            "stdout": "2.0.0"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver push",
+        "expected_result": {
+            "remote_tag": "v1.0.0-dev.2",
+            "remote_version": "2.0.0",
+            "stdout": "2.0.0"
+        }
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver init",
+        "expected_result": {
+            "stdout": "0.0.0"
+        }
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver bump pre",
+        "expected_result": {
+            "stdout": "0.0.0-pre.1"
+        }
+    },
+    {
+        "branch_name": "test1",
+        "command": "create-a-commit"
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver tag",
+        "expected_result": {
+            "stdout": "0.0.0-pre.1"
+        }
+    },
+    {
+        "branch_name": "test1",
+        "command": "git semver push",
+        "expected_result": {
+            "remote_version": "0.0.0-pre.1",
+            "remote_tag": "v0.0.0-pre.1",
+            "stdout": "0.0.0-pre.1"
+        }
+    },
+    {
+        "branch_name": "main",
+        "command": "git semver",
+        "expected_result": {
+            "remote_tag": "v1.0.0-dev.2",
+            "remote_version": "2.0.0",
+            "stdout": "2.0.0"
+        }
+    }
+]

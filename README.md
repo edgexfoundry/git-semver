@@ -1,3 +1,4 @@
+[![coverage](https://img.shields.io/badge/coverage-100.0%25-brightgreen)](https://pybuilder.io/)
 [![coverage](https://img.shields.io/badge/coverage-75.84%25-yellow)](https://pybuilder.io/)
 [![complexity](https://img.shields.io/badge/complexity-Simple:%205-brightgreen)](https://radon.readthedocs.io/en/latest/api.html#module-radon.complexity)
 [![vulnerabilities](https://img.shields.io/badge/vulnerabilities-None-brightgreen)](https://pypi.org/project/bandit/)
@@ -25,7 +26,7 @@ A CLI to execute tests for git semver functionality.
 
 optional arguments:
   -h, --help   show this help message and exit
-  --keep_repo  do not delete test repo from GitHub after testing
+  --keep-repo  do not delete test repo from GitHub after testing
 ```  
 
 ### Environment Variables

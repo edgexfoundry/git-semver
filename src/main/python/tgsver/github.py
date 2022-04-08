@@ -34,6 +34,8 @@ def get_client():
 
 
 def create_repo(client):
+    """ creates a test-git-semver repo on GitHub and returns 'user_name/repo_name' response
+    """
     repo_name = 'test-git-semver-' + time.strftime('%m-%d-%Y-%H-%M-%S')
     logger.info(f"Creating GitHub repository '{repo_name}'")
     response = client.post('/user/repos', json={'name': repo_name, 'auto_init': True})
@@ -41,12 +43,16 @@ def create_repo(client):
 
 
 def delete_repo(client, repo_name):
+    """ deletes test-git-semver repo from GitHub
+    """
     logger.info(f"Deleting GitHub repository '{repo_name}'")
     if client and repo_name:
         client.delete(f'/repos/{repo_name}')
 
 
 def create_branch(client, repo_name, branch_name):
+    """ creates a branch on the GitHub repo
+    """
     logger.debug(f"creating branch '{branch_name}' in repository '{repo_name}'")
     branches = client.get(f'/repos/{repo_name}/git/refs/heads')
     client.post(
@@ -58,13 +64,15 @@ def create_branch(client, repo_name, branch_name):
 
 
 def remove_branch(client, repo_name, branch_name):
-    """ removes branch from github repository
+    """ removes branch from GitHub repo
     """
     logger.debug(f"removing branch '{branch_name}' from repository '{repo_name}'")
     client.delete(f'/repos/{repo_name}/git/refs/heads/{branch_name}')
 
 
 def branch_exists(client, repo_name, branch_name):
+    """ checks if a branch exists in a repo
+    """
     logger.debug(f"checking if branch '{branch_name} 'exists in repository '{repo_name}'")
     branches = client.get(f'/repos/{repo_name}/branches')
     for branch in branches:
@@ -74,6 +82,8 @@ def branch_exists(client, repo_name, branch_name):
 
 
 def get_file_url(client, repo_name, branch_name, file_name):
+    """ returns the URL path to a file
+    """
     logger.debug(f"retrieving '{file_name}' url from repository '{repo_name}' branch '{branch_name}'")
     if branch_exists(client, repo_name, branch_name):
         results = client.get(f'/repos/{repo_name}/git/trees/{branch_name}?recursive=1')
@@ -86,6 +96,8 @@ def get_file_url(client, repo_name, branch_name, file_name):
 
 
 def read_file(client, repo_name, branch_name, file_name):
+    """ returns the content of a file
+    """
     logger.debug(f"reading content from file '{file_name}' in repository '{repo_name}' branch '{branch_name}'")
     file_url = get_file_url(client, repo_name, branch_name, file_name)
     if file_url:
@@ -98,6 +110,8 @@ def read_file(client, repo_name, branch_name, file_name):
 
 
 def is_head_tagged(client, repo_name, branch_name):
+    """ checks if HEAD is tagged
+    """
     logger.debug(f"checking if head in repository '{repo_name}' branch '{branch_name}' is tagged")
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
@@ -108,6 +122,8 @@ def is_head_tagged(client, repo_name, branch_name):
 
 
 def get_head_tag(client, repo_name, branch_name):
+    """ returns the HEAD tag
+    """
     logger.debug(f"retrieving head tag from repository '{repo_name}' branch '{branch_name}'")
     latest_commit_sha = client.get(f'/repos/{repo_name}/commits/{branch_name}')['sha']
     tags = client.get(f'/repos/{repo_name}/tags')
@@ -119,6 +135,8 @@ def get_head_tag(client, repo_name, branch_name):
 
 
 def clone_repo(ssh_url, repo_name):
+    """ clones repo to a specified directory
+    """
     logger.info(f"Cloning repo '{ssh_url}' to directory '{repo_name}'")
     run.run_command(f'git clone {ssh_url} {repo_name}', expected_exit_codes=[0])
     return repo_name

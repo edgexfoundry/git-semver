@@ -38,7 +38,7 @@ class TestColoredFormatter(unittest.TestCase):
 class TestLog(unittest.TestCase):
 
     @patch('tgsver.log.logging')
-    def test__add_stream_handler_ShouldCakkReturnExpected_When_Called(self, logging_patch, *patches):
+    def test__add_stream_handler_ShouldCallReturnExpected_When_Called(self, logging_patch, *patches):
         logger_mock = Mock()
         logging_patch.getLogger.return_value = logger_mock
         stream_handler_mock = Mock()

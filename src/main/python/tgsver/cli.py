@@ -28,7 +28,7 @@ def get_parser():
     parser = ArgumentParser(
         description='Execute git-semver functional tests')
     parser.add_argument(
-        '--keep_repo',
+        '--keep-repo',
         dest='keep_repo',
         action='store_true',
         help='do not delete test repo from GitHub after testing')
@@ -56,5 +56,5 @@ def main():
             del suite
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

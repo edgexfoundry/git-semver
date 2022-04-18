@@ -107,8 +107,12 @@ def configure_logging():
     """
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
-    name = os.path.basename(sys.argv[0])
-    file_handler = logging.FileHandler(f"{os.getenv('HOME')}/{name}.log")
+    script_name = os.path.basename(sys.argv[0])
+    log_file = f'{script_name}.log'
+    home_dir = os.getenv('HOME')
+    if home_dir:
+        log_file = f'{home_dir}/{script_name}.log'
+    file_handler = logging.FileHandler(log_file)
     file_formatter = logging.Formatter("%(asctime)s [%(funcName)s] %(levelname)s %(message)s")
     file_handler.setFormatter(file_formatter)
     root_logger.addHandler(file_handler)

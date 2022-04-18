@@ -30,20 +30,11 @@ The script leverages the following Python modules/libraries:
   * release pipelines
 
 ## Execution
-The primary way that `git-semver` is consumed within a Jenkins Pipeline is via the [edgex-global-pipelines](https://github.com/edgexfoundry/edgex-global-pipelines) `edgeXSemver` function.  The steps to execute locally are described here for testing purposes only.
-
-Build the local `py-git-semver` Docker image:
-```
-docker image build \
-  --build-arg http_proxy \
-  --build-arg https_proxy \
-  -t \
-  py-git-semver:latest .
-```
+The primary way that `git-semver` is consumed within a EdgeXFoundry Jenkins Pipeline is via the [edgex-global-pipelines](https://github.com/edgexfoundry/edgex-global-pipelines) `edgeXSemver` function.  The steps to execute locally are described here for testing purposes only.
 
 Clone the repository you wish to version into your current working directory and cd into it; in the example below it is bind mounted to `repo` in the container.
 
-Run container from `py-git-semver` image - requires host to have a valid github ssh key - if behind a proxy, ensure the specified proxies are provided:
+Run container from `py-git-semver` Nexus image - requires host to have a valid github ssh key - if behind a proxy, ensure the specified proxies are provided:
 ```
 docker container run \
   --rm \
@@ -55,7 +46,7 @@ docker container run \
   -e LOCAL_GID=$(id -g $USER) \
   -v $PWD:/repo \
   -v $HOME/.ssh:/home/user/.ssh \
-  py-git-semver:latest \
+  nexus3.edgexfoundry.org:10003/edgex-devops/py-git-semver:latest \
   bash
 ```
 
@@ -74,6 +65,12 @@ git semver tag
 git semver bump pre
 git semver push
 git semver
+```
+
+## Installation
+For those wishing to install the Python package directly may do so via:
+```
+pip install git+https://github.com/edgexfoundry/git-semver.git@python
 ```
 
 ## CLI Usage

@@ -39,7 +39,7 @@ docker image build \
   --build-arg http_proxy \
   --build-arg https_proxy \
   -t \
-  pygsver:latest .
+  py-git-semver:latest .
 ```
 
 Run container:
@@ -50,7 +50,7 @@ docker container run \
   -e http_proxy \
   -e https_proxy \
   -v $PWD:/code \
-  pygsver:latest \
+  py-git-semver:latest \
   /bin/bash
 ```
 
@@ -62,18 +62,18 @@ pyb -X
 ## Execution
 The primary way that `git-semver` is consumed within a Jenkins Pipeline is via the [edgex-global-pipelines](https://github.com/edgexfoundry/edgex-global-pipelines) `edgeXSemver` function.  The steps to execute locally are described here for testing purposes only.
 
-Build the local `pygsver` Docker image:
+Build the local `py-git-semver` Docker image:
 ```
 docker image build \
   --build-arg http_proxy \
   --build-arg https_proxy \
   -t \
-  pygsver:latest .
+  py-git-semver:latest .
 ```
 
 Clone the repository you wish to version into your current working directory and cd into it; in the example below it is bind mounted to `repo` in the container.
 
-Run container from `pygsver` image - requires host to have a valid github ssh key - if behind proxy ensure the specified proxies are provided, the proxies can be discarded if not running behind a proxy:
+Run container from `py-git-semver` image - requires host to have a valid github ssh key - if behind a proxy, ensure the specified proxies are provided:
 ```
 docker container run \
   --rm \
@@ -85,7 +85,7 @@ docker container run \
   -e LOCAL_GID=$(id -g $USER) \
   -v $PWD:/repo \
   -v $HOME/.ssh:/home/user/.ssh \
-  pygsver:latest \
+  py-git-semver:latest \
   bash
 ```
 

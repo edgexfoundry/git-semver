@@ -22,14 +22,6 @@ RUN apt-get update && apt-get install -y ssh netcat git
 RUN pip install pybuilder
 RUN pyb install
 
-# FROM python:3.9-alpine
-# ENV PYTHONDONTWRITEBYTECODE 1
-# ENV GIT_PYTHON_TRACE 1
-# WORKDIR /opt/pygsver
-# COPY --from=build-image /code/target/dist/pygsver-*/dist/pygsver-*.tar.gz /opt/pygsver/
-# RUN apk update && apk add openssh netcat-openbsd git
-# RUN pip install pygsver-*.tar.gz
-
 FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV GIT_PYTHON_TRACE 1

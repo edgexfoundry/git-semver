@@ -29,36 +29,6 @@ The script leverages the following Python modules/libraries:
   * build pipelines
   * release pipelines
 
-
-## Development
-
-Build image:
-```
-docker image build \
-  --target build-image \
-  --build-arg http_proxy \
-  --build-arg https_proxy \
-  -t \
-  py-git-semver:latest .
-```
-
-Run container:
-```
-docker container run \
-  --rm \
-  -it \
-  -e http_proxy \
-  -e https_proxy \
-  -v $PWD:/code \
-  py-git-semver:latest \
-  /bin/bash
-```
-
-Execute build:
-```
-pyb -X
-```
-
 ## Execution
 The primary way that `git-semver` is consumed within a Jenkins Pipeline is via the [edgex-global-pipelines](https://github.com/edgexfoundry/edgex-global-pipelines) `edgeXSemver` function.  The steps to execute locally are described here for testing purposes only.
 
@@ -180,4 +150,33 @@ usage: git-semver push [-h]
 
 optional arguments:
   -h, --help  show this help message and exit
+```
+
+## Development
+
+Build image:
+```
+docker image build \
+  --target build-image \
+  --build-arg http_proxy \
+  --build-arg https_proxy \
+  -t \
+  py-git-semver:latest .
+```
+
+Run container:
+```
+docker container run \
+  --rm \
+  -it \
+  -e http_proxy \
+  -e https_proxy \
+  -v $PWD:/code \
+  py-git-semver:latest \
+  /bin/bash
+```
+
+Execute build:
+```
+pyb -X
 ```

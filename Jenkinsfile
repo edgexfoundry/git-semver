@@ -16,7 +16,7 @@
 
 edgeXBuildDocker(
     project: 'py-git-semver',
-    arch: ['amd64'],
+    // arch: ['amd64'],
     mavenSettings: 'git-semver-settings',
     dockerImageName: 'py-git-semver',
     dockerNamespace: 'edgex-devops',

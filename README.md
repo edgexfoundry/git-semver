@@ -1,4 +1,3 @@
-
 # test-git-semver
 [![coverage](https://img.shields.io/badge/coverage-100.0%25-brightgreen)](https://pybuilder.io/)
 [![complexity](https://img.shields.io/badge/complexity-Simple:%205-brightgreen)](https://radon.readthedocs.io/en/latest/api.html#module-radon.complexity)
@@ -48,7 +47,7 @@ docker image build \
 --build-arg http_proxy \
 --build-arg https_proxy \
 -t \
-tgsver:latest .
+test-git-semver:latest .
 ```
 
 Execute the Docker container:
@@ -62,7 +61,7 @@ docker container run \
 -e GH_TOKEN_PSW \
 --entrypoint='' \
 -v $HOME/.ssh:/root/.ssh \
-tgsver:latest bash
+test-git-semver:latest bash
 ```
 
 ## Development
@@ -76,7 +75,7 @@ docker image build \
 --build-arg http_proxy \
 --build-arg https_proxy \
 -t \
-tgsver:latest .
+test-git-semver:latest .
 ```
 
 Run the Docker container:
@@ -88,7 +87,7 @@ docker container run \
 -e https_proxy \
 -e GH_TOKEN_PSW \
 -v $PWD:/code \
-tgsver:latest bash
+test-git-semver:latest bash
 ```
 
 Execute the build:

@@ -30,6 +30,5 @@ RUN apt-get update && apt-get install -y ssh netcat git gosu vim
 COPY tests.json /opt/tgsver/
 COPY --from=build-image /code/target/dist/tgsver-*/dist/tgsver-*.tar.gz /opt/tgsver/
 RUN pip install tgsver-*.tar.gz
-COPY pygsver-0.1.0.tar.gz /opt/tgsver/
-RUN pip install pygsver-0.1.0.tar.gz
+RUN pip install git+https://github.com/edgexfoundry/git-semver.git@python
 ENTRYPOINT ["test-git-semver"]

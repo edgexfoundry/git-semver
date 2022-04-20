@@ -41,27 +41,18 @@ Set the required environment variables:
 export GH_TOKEN_PSW='--token--'
 ```
 
-Build the Docker image:
-```sh
-docker image build \
---build-arg http_proxy \
---build-arg https_proxy \
--t \
-test-git-semver:latest .
-```
-
 Execute the Docker container:
 ```bash
 docker container run \
 --rm \
 -it \
--e ALL_PROXY=socks5://proxy-us.intel.com:1080 \
+-e ALL_PROXY \
 -e http_proxy \
 -e https_proxy \
 -e GH_TOKEN_PSW \
 --entrypoint='' \
 -v $HOME/.ssh:/root/.ssh \
-test-git-semver:latest bash
+nexus3.edgexfoundry.org:10003/edgex-devops/test-git-semver:latest bash
 ```
 
 ## Development
@@ -85,7 +76,6 @@ docker container run \
 -it \
 -e http_proxy \
 -e https_proxy \
--e GH_TOKEN_PSW \
 -v $PWD:/code \
 test-git-semver:latest bash
 ```

@@ -31,25 +31,19 @@ def check_prerelease(semver_prerelease, prefix):
             raise PrereleaseMismatchError(f'mismatch between current prerelease {semver_prefix} and bump {prefix} - use init to set version with different prerelease')
 
 
-def bump_patch_for_compatability(semver_version):
-    """ bump patch only if semver version patch is 0 and has no prerelease
-    """
-    if semver_version.prerelease is None and semver_version.patch == 0:
-        return semver_version.bump_patch()
-    return semver_version
-
-
 def bump_version(version, axis, prefix):
     """ parse and bump semantic version
     """
     logger.debug(f'bumping version:{version} on axis:{axis} with prefix:{prefix}')
     semver_version = semver.VersionInfo.parse(version)
-    if axis == 'pre' and prefix:
+    if axis == 'pre':
         check_prerelease(semver_version.prerelease, prefix)
-        # implemented for backwards compatibility with go-lang version of git-semver
-        # will bump patch when version has no prerelease and current patch version is 0
-        # e.g. bump pre of 4.8.0 will result in 4.8.1-prefix.1
-        semver_version = bump_patch_for_compatability(semver_version)
+        if semver_version.prerelease is None:
+            # implemented for backwards compatibility with go-lang version of git-semver
+            # when bump pre - will bump patch first if version has no prerelease
+            # e.g. bump pre of 4.8.0 will result in 4.8.1-prefix.1
+            # e.g. bump pre of 5.1.3 will result in 5.1.4-prefix.1
+            semver_version = semver_version.bump_patch()
         semver_version = semver_version.bump_prerelease(token=prefix)
     elif axis == 'final':
         semver_version = semver_version.finalize_version()

@@ -62,3 +62,38 @@ class TestBump(unittest.TestCase):
         self.assertEqual(str(bump_version('0.1.1-dev.2', 'final', None)), '0.1.1')
         with self.assertRaises(PrereleaseMismatchError):
             bump_version('0.1.1-dev.1', 'pre', 'rc')
+
+        self.assertEqual(str(bump_version('1.0.0', 'pre', 'dev')), '1.0.1-dev.1')
+
+        version = bump_version('1.0.1', 'pre', 'dev')
+        self.assertEqual(str(version), '1.0.2-dev.1')
+
+        version = bump_version(str(version), 'pre', 'dev')
+        self.assertEqual(str(version), '1.0.2-dev.2')
+
+        version = bump_version(str(version), 'patch', None)
+        self.assertEqual(str(version), '1.0.3')
+
+        version = bump_version(str(version), 'pre', 'dev')
+        self.assertEqual(str(version), '1.0.4-dev.1')
+
+        version = bump_version(str(version), 'minor', None)
+        self.assertEqual(str(version), '1.1.0')
+
+        version = bump_version(str(version), 'pre', 'dev')
+        self.assertEqual(str(version), '1.1.1-dev.1')
+
+        version = bump_version(str(version), 'major', None)
+        self.assertEqual(str(version), '2.0.0')
+
+        version = bump_version(str(version), 'pre', 'dev')
+        self.assertEqual(str(version), '2.0.1-dev.1')
+
+        version = bump_version(str(version), 'final', None)
+        self.assertEqual(str(version), '2.0.1')
+
+        version = bump_version(str(version), 'pre', 'dev')
+        self.assertEqual(str(version), '2.0.2-dev.1')
+
+        version = bump_version(str(version), 'pre', None)
+        self.assertEqual(str(version), '2.0.2-dev.2')

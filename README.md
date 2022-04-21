@@ -31,7 +31,7 @@ Run container from `py-git-semver` Nexus image - requires host to have a valid g
 docker container run \
   --rm \
   -it \
-  -e ALL_PROXY=[SOCKS_PROXY]  \
+  -e ALL_PROXY \
   -e http_proxy \
   -e https_proxy \
   -e LOCAL_UID=$(id -u $USER) \

@@ -45,6 +45,18 @@ class TestBump(unittest.TestCase):
         run_bump(repo_mock, axis='pre', prefix='dev', settings=settings)
         write_version_patch.assert_called_once_with(settings, '1.2.3-dev.2', force=True)
 
+    @patch('pygsver.bump.check_prerelease')
+    @patch('pygsver.bump.read_version', return_value='4.8.0')
+    @patch('pygsver.bump.write_version')
+    def test__run_bump_Should_CallExpected_When_BumpPrePatchZeroNoPreRelease(self, write_version_patch, *patches):
+        settings = {
+            'semver_branch': 'main',
+            'semver_path': '/repo/.semver'
+        }
+        repo_mock = Mock()
+        run_bump(repo_mock, axis='pre', prefix='dev', settings=settings)
+        write_version_patch.assert_called_once_with(settings, '4.8.1-dev.1', force=True)
+
     @patch('pygsver.bump.read_version', return_value='1.2.3-dev.1')
     @patch('pygsver.bump.write_version')
     def test__run_bump_Should_CallExpected_When_BumpFinal(self, write_version_patch, *patches):

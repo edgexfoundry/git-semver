@@ -39,11 +39,10 @@ def bump_patch_for_compatability(semver_version):
     return semver_version
 
 
-def run_bump(repo, axis=None, prefix=None, settings=None):
-    """ git semver bump
+def bump_version(version, axis, prefix):
+    """ parse and bump semantic version
     """
-    logger.debug(f'bump axis:{axis} prefix:{prefix}')
-    version = read_version(settings)
+    logger.debug(f'bumping version:{version} on axis:{axis} with prefix:{prefix}')
     semver_version = semver.VersionInfo.parse(version)
     if axis == 'pre' and prefix:
         check_prerelease(semver_version.prerelease, prefix)
@@ -56,4 +55,13 @@ def run_bump(repo, axis=None, prefix=None, settings=None):
         semver_version = semver_version.finalize_version()
     else:
         semver_version = getattr(semver_version, f'bump_{axis}')()
+    logger.debug(f'bumped version:{str(semver_version)}')
+    return semver_version
+
+
+def run_bump(repo, axis=None, prefix=None, settings=None):
+    """ git semver bump
+    """
+    version = read_version(settings)
+    semver_version = bump_version(version, axis, prefix)
     write_version(settings, str(semver_version), force=True)

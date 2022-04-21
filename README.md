@@ -21,14 +21,6 @@ The script leverages the following Python modules/libraries:
   * maintain a high-degree of developer confidence to facilitate future development or code refactoring
 * provide opportunity to migrate complexities from current `edgeXSemver` Jenkins Shared Library
 
-#### Remaining Effort
-* ensure 100% backwards compatability with:
-  * current Golang-based git-semver command line arguments
-  * current environment variable API
-* execute extensive functional testing
-  * build pipelines
-  * release pipelines
-
 ## Execution
 The primary way that `git-semver` is consumed within a EdgeXFoundry Jenkins Pipeline is via the [edgex-global-pipelines](https://github.com/edgexfoundry/edgex-global-pipelines) `edgeXSemver` function.  The steps to execute locally are described here for testing purposes only.
 
@@ -39,7 +31,7 @@ Run container from `py-git-semver` Nexus image - requires host to have a valid g
 docker container run \
   --rm \
   -it \
-  -e ALL_PROXY=[SOCKS_PROXY]  \
+  -e ALL_PROXY \
   -e http_proxy \
   -e https_proxy \
   -e LOCAL_UID=$(id -u $USER) \

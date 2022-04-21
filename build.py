@@ -30,7 +30,7 @@ name = 'pygsver'
 authors = [Author('Emilio Reyes', 'emilio.reyes@intel.com')]
 summary = 'A Python script that manages semantic versioning of a git repository'
 url = 'https://github.com/edgexfoundry/git-semver/tree/python'
-version = '0.1.1'
+version = '0.1.2'
 default_task = [
     'clean',
     'analyze',
@@ -58,7 +58,7 @@ def set_properties(project):
     project.set_property('distutils_description_overwrite', True)
     project.set_property('distutils_upload_skip_existing', True)
     project.set_property('distutils_console_scripts', ['git-semver = pygsver.cli:main'])
-    project.set_property('radon_break_build_average_complexity_threshold', 3.6)
-    project.set_property('radon_break_build_complexity_threshold', 14)
+    project.set_property('radon_break_build_average_complexity_threshold', 3)
+    project.set_property('radon_break_build_complexity_threshold', 6)
     project.set_property('bandit_break_build', True)
     project.set_property('anybadge_use_shields', True)

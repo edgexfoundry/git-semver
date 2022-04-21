@@ -18,6 +18,7 @@ from mock import patch
 from mock import Mock
 from pygsver.bump import run_bump
 from pygsver.bump import check_prerelease
+from pygsver.bump import bump_version
 from pygsver.errors import PrereleaseMismatchError
 
 
@@ -33,63 +34,31 @@ class TestBump(unittest.TestCase):
         """
         pass
 
-    @patch('pygsver.bump.check_prerelease')
-    @patch('pygsver.bump.read_version', return_value='1.2.3-dev.1')
     @patch('pygsver.bump.write_version')
-    def test__run_bump_Should_CallExpected_When_BumpPre(self, write_version_patch, *patches):
+    @patch('pygsver.bump.bump_version')
+    @patch('pygsver.bump.read_version')
+    def test__run_bump_Should_CallExpected_When_Called(self, read_version_patch, bump_version_patch, write_version_patch, *patches):
         settings = {
             'semver_branch': 'main',
             'semver_path': '/repo/.semver'
         }
         repo_mock = Mock()
-        run_bump(repo_mock, axis='pre', prefix='dev', settings=settings)
-        write_version_patch.assert_called_once_with(settings, '1.2.3-dev.2', force=True)
-
-    @patch('pygsver.bump.read_version', return_value='1.2.3-dev.1')
-    @patch('pygsver.bump.write_version')
-    def test__run_bump_Should_CallExpected_When_BumpFinal(self, write_version_patch, *patches):
-        settings = {
-            'semver_branch': 'main',
-            'semver_path': '/repo/.semver'
-        }
-        repo_mock = Mock()
-        run_bump(repo_mock, axis='final', prefix=None, settings=settings)
-        write_version_patch.assert_called_once_with(settings, '1.2.3', force=True)
-
-    @patch('pygsver.bump.read_version', return_value='1.2.3-dev.1')
-    @patch('pygsver.bump.write_version')
-    def test__run_bump_Should_CallExpected_When_BumpPatch(self, write_version_patch, *patches):
-        settings = {
-            'semver_branch': 'main',
-            'semver_path': '/repo/.semver'
-        }
-        repo_mock = Mock()
-        run_bump(repo_mock, axis='patch', prefix=None, settings=settings)
-        write_version_patch.assert_called_once_with(settings, '1.2.4', force=True)
-
-    @patch('pygsver.bump.read_version', return_value='1.2.3-dev.1')
-    @patch('pygsver.bump.write_version')
-    def test__run_bump_Should_CallExpected_When_BumpMinor(self, write_version_patch, *patches):
-        settings = {
-            'semver_branch': 'main',
-            'semver_path': '/repo/.semver'
-        }
-        repo_mock = Mock()
-        run_bump(repo_mock, axis='minor', prefix=None, settings=settings)
-        write_version_patch.assert_called_once_with(settings, '1.3.0', force=True)
-
-    @patch('pygsver.bump.read_version', return_value='1.2.3-dev.1')
-    @patch('pygsver.bump.write_version')
-    def test__run_bump_Should_CallExpected_When_BumpMajor(self, write_version_patch, *patches):
-        settings = {
-            'semver_branch': 'main',
-            'semver_path': '/repo/.semver'
-        }
-        repo_mock = Mock()
-        run_bump(repo_mock, axis='major', prefix=None, settings=settings)
-        write_version_patch.assert_called_once_with(settings, '2.0.0', force=True)
+        run_bump(repo_mock, axis='--axis--', prefix='--prefix--', settings=settings)
+        bump_version_patch.assert_called_once_with(read_version_patch.return_value, '--axis--', '--prefix--')
+        write_version_patch.assert_called_once_with(settings, str(bump_version_patch.return_value), force=True)
 
     def test__check_prerelease_Should_RaisePrereleaseMismatchError_When_PrereleaseMismatch(self, *patches):
         with self.assertRaises(PrereleaseMismatchError):
             check_prerelease('dev.1', 'test')
         check_prerelease('dev.1', 'dev')
+
+    def test__bump_version_Should_ReturnExpectedVersion_When_Called(self, *patches):
+        self.assertEqual(str(bump_version('0.1.0', 'major', None)), '1.0.0')
+        self.assertEqual(str(bump_version('0.1.0', 'minor', None)), '0.2.0')
+        self.assertEqual(str(bump_version('0.1.0', 'patch', None)), '0.1.1')
+        self.assertEqual(str(bump_version('0.1.1', 'patch', 'dev')), '0.1.2')
+        self.assertEqual(str(bump_version('0.1.0', 'pre', 'dev')), '0.1.1-dev.1')
+        self.assertEqual(str(bump_version('0.1.1-dev.1', 'pre', 'dev')), '0.1.1-dev.2')
+        self.assertEqual(str(bump_version('0.1.1-dev.2', 'final', None)), '0.1.1')
+        with self.assertRaises(PrereleaseMismatchError):
+            bump_version('0.1.1-dev.1', 'pre', 'rc')

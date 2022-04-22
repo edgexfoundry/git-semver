@@ -32,7 +32,7 @@ authors = [
     Author('Emilio Reyes', 'emilio.reyes@intel.com')]
 summary = 'A Python script to execute git-semver functional tests'
 url = 'https://github.com/jaron-bauers/test-git-semver'
-version = '0.1.0'
+version = '0.1.1'
 default_task = [
     'clean',
     'analyze',

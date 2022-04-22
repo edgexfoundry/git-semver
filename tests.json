@@ -191,7 +191,7 @@
         "branch_name": "main",
         "command": "git semver bump pre --prefix=tst",
         "expected_result": {
-            "stdout": "2.0.0-tst.1"
+            "stdout": "2.0.1-tst.1"
         }
     },
     {
@@ -212,14 +212,14 @@
             "SEMVER_PRE_PREFIX": "tst"
         },
         "expected_result": {
-            "stdout": "2.0.0-tst.2"
+            "stdout": "2.0.1-tst.2"
         }
     },
     {
         "branch_name": "main",
         "command": "git semver bump final",
         "expected_result": {
-            "stdout": "2.0.0"
+            "stdout": "2.0.1"
         }
     },
     {
@@ -227,8 +227,8 @@
         "command": "git semver push",
         "expected_result": {
             "remote_tag": "v1.0.0-dev.2",
-            "remote_version": "2.0.0",
-            "stdout": "2.0.0"
+            "remote_version": "2.0.1",
+            "stdout": "2.0.1"
         }
     },
     {
@@ -242,7 +242,7 @@
         "branch_name": "test1",
         "command": "git semver bump pre",
         "expected_result": {
-            "stdout": "0.0.0-pre.1"
+            "stdout": "0.0.1-pre.1"
         }
     },
     {
@@ -253,16 +253,16 @@
         "branch_name": "test1",
         "command": "git semver tag",
         "expected_result": {
-            "stdout": "0.0.0-pre.1"
+            "stdout": "0.0.1-pre.1"
         }
     },
     {
         "branch_name": "test1",
         "command": "git semver push",
         "expected_result": {
-            "remote_version": "0.0.0-pre.1",
-            "remote_tag": "v0.0.0-pre.1",
-            "stdout": "0.0.0-pre.1"
+            "remote_version": "0.0.1-pre.1",
+            "remote_tag": "v0.0.1-pre.1",
+            "stdout": "0.0.1-pre.1"
         }
     },
     {
@@ -270,8 +270,8 @@
         "command": "git semver",
         "expected_result": {
             "remote_tag": "v1.0.0-dev.2",
-            "remote_version": "2.0.0",
-            "stdout": "2.0.0"
+            "remote_version": "2.0.1",
+            "stdout": "2.0.1"
         }
     }
 ]

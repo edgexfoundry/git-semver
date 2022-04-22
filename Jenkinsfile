@@ -22,6 +22,6 @@ edgeXBuildDocker(
     dockerImageName: 'test-git-semver',
     dockerNamespace: 'edgex-devops',
     dockerNexusRepo: 'snapshots',
-    dockerTags: ['0.1.0'],
+    dockerTags: ['0.1.1'],
     releaseBranchOverride: 'test-git-semver'
 )

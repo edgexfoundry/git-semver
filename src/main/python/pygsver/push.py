@@ -26,6 +26,18 @@ def run_push(repo, settings=None):
     semver_path = settings['semver_path']
     semver_repo = Repo(semver_path)
     semver_remote_name = settings['semver_remote_name']
+
+    # pull remote if it has changed
+    local_commits = list(semver_repo.iter_commits())
+    latest_remote_commit = semver_repo.remotes[semver_remote_name].fetch()[0].commit.hexsha
+    if latest_remote_commit not in local_commits:
+        logger.debug('remote changes detected')
+        logger.debug(f'latest remote commit {latest_remote_commit} is not in local commits')
+        logger.debug('integrating remote changes with a git pull')
+        semver_repo.git.pull(semver_remote_name, 'semver')
+    else:
+        logger.debug('no remote changes detected')
+
     semver_repo.git.push(semver_remote_name, 'semver')
 
     logger.debug('push all version tags')

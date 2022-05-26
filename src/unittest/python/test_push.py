@@ -33,8 +33,15 @@ class TestPush(unittest.TestCase):
         pass
 
     @patch('pygsver.push.Repo')
-    def test__run_push_Should_CallExpected_When_Called(self, repo_patch, *patches):
-        semver_repo_mock = Mock()
+    def test__run_push_Should_CallExpected_When_NoRemoteChanges(self, repo_patch, *patches):
+        hex_mock = Mock(hexsha='123456abcdef')
+        commit_mock = Mock(commit=hex_mock)
+        remote_origin_mock = Mock()
+        remote_origin_mock.fetch.return_value = [commit_mock]
+        remotes_mock = {'origin': remote_origin_mock}
+        semver_repo_mock = Mock(remotes=remotes_mock)
+        semver_repo_mock.iter_commits.return_value = ['123456abcdef', 'commita', 'commitb']
+
         repo_patch.return_value = semver_repo_mock
         settings = {
             'semver_remote_name': 'origin',
@@ -42,5 +49,27 @@ class TestPush(unittest.TestCase):
         }
         repo_mock = Mock()
         run_push(repo_mock, settings=settings)
+        self.assertTrue(call('origin', 'semver') not in semver_repo_mock.git.pull.mock_calls)
+        self.assertTrue(call('origin', 'semver') in semver_repo_mock.git.push.mock_calls)
+        self.assertTrue(call('origin', 'refs/tags/v*:refs/tags/v*') in repo_mock.git.push.mock_calls)
+
+    @patch('pygsver.push.Repo')
+    def test__run_push_Should_CallExpected_When_RemoteChanges(self, repo_patch, *patches):
+        hex_mock = Mock(hexsha='890123abcdef')
+        commit_mock = Mock(commit=hex_mock)
+        remote_origin_mock = Mock()
+        remote_origin_mock.fetch.return_value = [commit_mock]
+        remotes_mock = {'origin': remote_origin_mock}
+        semver_repo_mock = Mock(remotes=remotes_mock)
+        semver_repo_mock.iter_commits.return_value = ['commita', 'commitb']
+
+        repo_patch.return_value = semver_repo_mock
+        settings = {
+            'semver_remote_name': 'origin',
+            'semver_path': '/repo/.semver'
+        }
+        repo_mock = Mock()
+        run_push(repo_mock, settings=settings)
+        self.assertTrue(call('origin', 'semver') in semver_repo_mock.git.pull.mock_calls)
         self.assertTrue(call('origin', 'semver') in semver_repo_mock.git.push.mock_calls)
         self.assertTrue(call('origin', 'refs/tags/v*:refs/tags/v*') in repo_mock.git.push.mock_calls)

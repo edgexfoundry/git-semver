@@ -30,7 +30,7 @@ name = 'pygsver'
 authors = [Author('Emilio Reyes', 'emilio.reyes@intel.com')]
 summary = 'A Python script that manages semantic versioning of a git repository'
 url = 'https://github.com/edgexfoundry/git-semver/tree/python'
-version = '0.1.3'
+version = '0.1.4'
 default_task = [
     'clean',
     'analyze',

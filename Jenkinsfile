@@ -20,6 +20,6 @@ edgeXBuildDocker(
     dockerImageName: 'py-git-semver',
     dockerNamespace: 'edgex-devops',
     dockerNexusRepo: 'snapshots',
-    dockerTags: ['0.1.3'],
+    dockerTags: ['0.1.4'],
     releaseBranchOverride: 'python'
 )

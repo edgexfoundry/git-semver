@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 Intel Corporation
+# Copyright (c) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,28 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-ARG BASE=golang:1.16-alpine3.14
-FROM ${BASE} as builder
-
-RUN sed -e 's/dl-cdn[.]alpinelinux.org/nl.alpinelinux.org/g' -i~ /etc/apk/repositories
-RUN apk add --update --no-cache make git openssh-client
-
+FROM python:3.9-slim AS build-image
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV GIT_PYTHON_TRACE 1
 WORKDIR /code
+COPY . /code/
+RUN apt-get update && apt-get install -y ssh netcat git
+RUN pip install pybuilder
+RUN pyb install
 
-COPY . .
-
-RUN go mod download
-
-ARG MAKE="make build"
-RUN $MAKE
-
-FROM alpine:3.14
-
-LABEL license='SPDX-License-Identifier: Apache-2.0' \
-    copyright='Copyright (c) 2020: Intel'
-
-RUN sed -e 's/dl-cdn[.]alpinelinux.org/nl.alpinelinux.org/g' -i~ /etc/apk/repositories
-RUN apk add --update --no-cache git openssh-client netcat-openbsd
-
-COPY --from=builder /code/git-semver /usr/local/bin/git-semver
+FROM python:3.9-slim
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV GIT_PYTHON_TRACE 1
+WORKDIR /opt/pygsver
+RUN apt-get update && apt-get install -y ssh netcat git gosu
+COPY --from=build-image /code/target/dist/pygsver-*/dist/pygsver-*.tar.gz /opt/pygsver/
+RUN pip install pygsver-*.tar.gz
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -1,112 +1,171 @@
+## py-git-semver
+[![coverage](https://img.shields.io/badge/coverage-100.0%25-brightgreen)](https://pybuilder.io/)
+[![complexity](https://img.shields.io/badge/complexity-Simple:%205-brightgreen)](https://radon.readthedocs.io/en/latest/api.html#module-radon.complexity)
+[![vulnerabilities](https://img.shields.io/badge/vulnerabilities-None-brightgreen)](https://pypi.org/project/bandit/)
+[![python](https://img.shields.io/badge/python-3.9-teal)](https://www.python.org/downloads/)
 
-# GIT SemVer
-[![Build Status](https://jenkins.edgexfoundry.org/view/EdgeX%20Foundry%20Project/job/edgexfoundry/job/git-semver/job/main/badge/icon)](https://jenkins.edgexfoundry.org/view/EdgeX%20Foundry%20Project/job/edgexfoundry/job/git-semver/job/main/) [![Code Coverage](https://codecov.io/gh/edgexfoundry/git-semver/branch/main/graph/badge.svg?token=myrBwV32RA)](https://codecov.io/gh/edgexfoundry/git-semver) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/edgexfoundry/git-semver)](https://goreportcard.com/report/github.com/edgexfoundry/git-semver) [![GitHub Latest Dev Tag)](https://img.shields.io/github/v/tag/edgexfoundry/git-semver?include_prereleases&sort=semver&label=latest-dev)](https://github.com/edgexfoundry/git-semver/tags) ![GitHub Latest Stable Tag)](https://img.shields.io/github/v/tag/edgexfoundry/git-semver?sort=semver&label=latest-stable) [![GitHub License](https://img.shields.io/github/license/edgexfoundry/git-semver)](https://choosealicense.com/licenses/apache-2.0/) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/edgexfoundry/git-semver) [![GitHub Pull Requests](https://img.shields.io/github/issues-pr-raw/edgexfoundry/git-semver)](https://github.com/edgexfoundry/git-semver/pulls) [![GitHub Contributors](https://img.shields.io/github/contributors/edgexfoundry/git-semver)](https://github.com/edgexfoundry/git-semver/contributors) [![GitHub Committers](https://img.shields.io/badge/team-committers-green)](https://github.com/orgs/edgexfoundry/teams/git-semver-committers/members) [![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/edgexfoundry/git-semver)](https://github.com/edgexfoundry/git-semver/commits) [![Go Doc](https://godoc.org/github.com/edgexfoundry/git-semver?status.svg)](https://godoc.org/github.com/edgexfoundry/git-semver)
+A Python script that manages semantic versioning of a git repository. This is a port of [git-semver](https://github.com/edgexfoundry/git-semver) to Python.
 
+The script leverages the following Python modules/libraries:
+* [GitPython](https://pypi.org/project/GitPython/) A Python library used to interact with Git repositories.
+* [semver](https://pypi.org/project/semver/) A Python module for semantic versioning.
 
-Create and manage a `.semver` directory right next to your `.git` directory, for all of your [Semantic Versioning][semver-web] needs.
+#### Motivation
+* conform to a scripting language that aligns better with current DevOps skillset
+* because `git semver` is a key DevOps capability it **must** be implemented using best-known software development practices:
+  * ensure a high-degree of unit test coverage
+  * ensure code complexity is low to facilitate quick rampup of new DevOps team members
+  * ensure it is free from common security issues
+  * maintain a thoroughly documented API
+  * include a robust build pipeline to continuously ensure code quality standards are maintained on every commit
+  * maintain a high-degree of developer confidence to facilitate future development or code refactoring
+* provide opportunity to migrate complexities from current `edgeXSemver` Jenkins Shared Library
+
+## Execution
+The primary way that `git-semver` is consumed within a EdgeXFoundry Jenkins Pipeline is via the [edgex-global-pipelines](https://github.com/edgexfoundry/edgex-global-pipelines) `edgeXSemver` function.  The steps to execute locally are described here for testing purposes only.
+
+Clone the repository you wish to version into your current working directory and cd into it; in the example below it is bind mounted to `repo` in the container.
+
+Run container from `py-git-semver` Nexus image - requires host to have a valid github ssh key - if behind a proxy, ensure the specified proxies are provided:
+```
+docker container run \
+  --rm \
+  -it \
+  -e ALL_PROXY \
+  -e http_proxy \
+  -e https_proxy \
+  -e LOCAL_UID=$(id -u $USER) \
+  -e LOCAL_GID=$(id -g $USER) \
+  -v $PWD:/repo \
+  -v $HOME/.ssh:/home/user/.ssh \
+  nexus3.edgexfoundry.org:10003/edgex-devops/py-git-semver:latest \
+  bash
+```
+
+Verify SSH inside the container:
+```
+eval `ssh-agent`
+ssh-add
+ssh -T git@github.com
+```
+
+Typical execution flow:
+```
+export SEMVER_PRE_PREFIX=dev
+git semver init --version=0.1.0-dev.1
+git semver tag
+git semver bump pre
+git semver push
+git semver
+```
 
 ## Installation
-
-### Go
-
-If you're using Go (1.11.4+):
-
-```bash
-go get github.com/edgexfoundry/git-semver
+For those wishing to install the Python package directly may do so via:
+```
+pip install git+https://github.com/edgexfoundry/git-semver.git@python
 ```
 
-Assuming that your `$GOPATH/bin` is in your path, that's it.
-
-## Usage
-
-NOTE: As of yet, authentication is the default provided by [src-d/go-git](https://github.com/src-d/go-git), i.e. ssh-agent auth for SSH URLs.
-
-### `git semver init [-ver=<version>] [-force]`
-
-Prepare the repository (and the current branch) for Semantic Versioning:
-
-```bash
-# git [init|clone] ...
-git semver init
-```
-
-This will:
-
-- create an orphaned branch named `semver`.
-- create and commit a single file named after your current branch, i.e. `master`, with the content of `0.0.0` unless a version is specified. The default version can be overridden by specifying the `-ver=<version>` flag to `init`. Note, if specified, the version must be a valid semantic version otherwise the command will return an error.
-- move this new checkout to `.semver` in your current repository
-- modify the `.git/info/exclude` to ignore `.semver`
-- push the `semver` branch to your current `.git` repository directory as if it were a remote.
-- `force` will force set the specified or default version regardless of an existing version being present.
-
-This invocation is idempotent-ish in that it will inspect your current repository and make modifications to the `semver` configuration accordingly. It will also attempt to clone (or checkout) the `semver` branch if it already exists instead of creating it anew.
+## CLI Usage
 
 ### `git semver`
+```
+usage: git-semver [-h] {init,tag,bump,push} ...
 
-Write to STDOUT the current version for the current branch.
+A Python script that manages semantic versioning of a git repository
 
-### `git semver bump [-pre=<prefix>] major|minor|patch|final|pre`
+positional arguments:
+  {init,tag,bump,push}
+    init                set the initial semantic version
+    tag                 create tag at HEAD of the current branch with the current semantic version prefixed with 'v'
+    bump                increment the current semantic version
+    push                push the semver branch commits and all version tags set on the current branch to the remote
 
-This will bump the specified axis and commit the change to the semver branch. `final` lops off any pre-release semver suffix whereas `pre` appends it. The default pre-release prefix is "pre" when bumping the `pre` axis but can be overridden by specifying the `-pre=prefix` flag to `bump`. Additionally, specifying the `-pre=prefix` flag to `major`, `minor`, or `patch` will initialize the pre-release semver suffix after bumping the specified axis.
-
-For example, if currently on the `master` branch and the value returned by `git semver` is `1.0.0` invoking `git semver bump -pre=rc patch` will result in `1.0.1-rc.1` written to `$PWD/.semver/master` and commited, the written to STDOUT.
-
-### `git semver tag [-force]`
-
-Attempt to tag the current HEAD with a tag that is effectively `v$(git semver)`. This will fail if `git-semver` detects a tag on the current HEAD that can be parsed as a Semantic Version, unless the `force` flag is specified. The `force` flag will tag the current HEAD regardless if there is an existing tag present on HEAD.
-
-### `git semver push`
-
-Push `semver` branch commits to the remote. Also push tags _from the current repo_ that match the ref-spec `refs/tags/v*:refs/tags/v*`.
-
-### Environment Variables
-
-From [scope/scope.go](scope/scope.go), these values have default values that can be over-ridden:
-
-- `SEMVER_ORIGIN_NAME = origin`
-- `SEMVER_PRE_PREFIX  = pre`
-- `SEMVER_USER_EMAIL  = semver@semver.org`
-- `SEMVER_USER_NAME   = semver`
-
-Additionally, `$SEMVER_BRANCH` (then `$GIT_BRANCH` if empty, then `$BRANCH_NAME`) will be dereferenced if `git-semver` is unable to detect the current branch (common with the default clone/checkout in Jenkins).
-
-As described below, there is also `SEMVER_DEBUG` which interprets as per [strconv.ParseBool()](https://golang.org/pkg/strconv/#ParseBool) with the caveat that "on", "On, or "ON" are are treated as `true`.
-
-### When Things Go Wrong
-
-If this darn tool just isn't behaving the way you expect, consider invoking it with the `SEMVER_DEBUG=on` to log a bit more detail to STDERR, e.g.
-
-```bash
-export SEMVER_DEBUG=on
-git semver init
-# $GIT_DIR = /tmp/test/.git
-# $GIT_WORK_TREE = /tmp/test
-# $SEMVER_ORIGIN_NAME = origin
-# $SEMVER_USER_EMAIL = semver@semver.org
-# $SEMVER_USER_NAME = semver
-# $SEMVER_BRANCH = master
-# $SEMVER_TEMP = /var/folders/7s/bwc8hz3n5498r68fw4gq6cxr0000gq/T/semver-546746833
-# git clone --branch semver /tmp/test/.git $SEMVER_TEMP
-# -> Clone(): remote repository is empty
-# git init /var/folders/7s/bwc8hz3n5498r68fw4gq6cxr0000gq/T/semver-546746833
-# git push /tmp/test/.git semver
-# '/var/folders/7s/bwc8hz3n5498r68fw4gq6cxr0000gq/T/semver-546746833' -> '/tmp/test/.semver'
-# $SEMVER_DIR = /tmp/test/.semver
-git semver
-# $GIT_DIR = /tmp/test/.git
-# $GIT_WORK_TREE = /tmp/test
-# $SEMVER_ORIGIN_NAME = origin
-# $SEMVER_USER_EMAIL = semver@semver.org
-# $SEMVER_USER_NAME = semver
-# $SEMVER_BRANCH = master
-# $SEMVER_DIR = /tmp/test/.semver
-0.0.0
+optional arguments:
+  -h, --help            show this help message and exit
 ```
 
-Submitting such output with your [bug reports](https://github.com/edgexfoundry/git-semver/issues) will be helpful!
+### `git semver init`
+```
+usage: git-semver init [-h] [--version VERSION] [--force]
+  set the initial semantic version
 
----
+optional arguments:
+  -h, --help         show this help message and exit
+  --version VERSION  a specific semantic version to set as the initial
+  --force            force set the semantic version - required if a semantic version is already set
+```
 
-[semver-web]: https://semver.org/ "Semantic Versioning"
-[concourse-semver]: https://github.com/concourse/semver-resource "Concourse SemVer Resource"
+### `git semver tag`
+```
+usage: git-semver tag [-h] [--force]
+  create tag at HEAD of the current branch with the current semantic version prefixed with 'v'
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --force     force set the tag - required if HEAD on the current branch is already tagged
+```
+
+### `git semver bump`
+```
+usage: git-semver bump [-h] {major,minor,patch,final,pre} ...
+  increment the current semantic version
+
+positional arguments:
+  {major,minor,patch,final,pre}
+    major               increment the MAJOR version
+    minor               increment the MINOR version
+    patch               increment the PATCH version
+    final               increment the FINAL version
+    pre                 increment the PRERELEASE version
+
+optional arguments:
+  -h, --help            show this help message and exit
+```
+
+### `git semver bump pre`
+```
+usage: git-semver bump pre [-h] [--prefix PREFIX]
+  increment the PRERELEASE version
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --prefix PREFIX  specify the PRERELEASE prefix
+```
+
+### `git semver push`
+```
+usage: git-semver push [-h]
+  push the semver branch commits and all version tags set on the current branch to the remote
+
+optional arguments:
+  -h, --help  show this help message and exit
+```
+
+## Development
+
+Build image:
+```
+docker image build \
+  --target build-image \
+  --build-arg http_proxy \
+  --build-arg https_proxy \
+  -t \
+  py-git-semver:latest .
+```
+
+Run container:
+```
+docker container run \
+  --rm \
+  -it \
+  -e http_proxy \
+  -e https_proxy \
+  -v $PWD:/code \
+  py-git-semver:latest \
+  /bin/bash
+```
+
+Execute build:
+```
+pyb -X
+```

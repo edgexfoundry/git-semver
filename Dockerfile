@@ -18,7 +18,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV GIT_PYTHON_TRACE 1
 WORKDIR /code
 COPY . /code/
-RUN apt-get update && apt-get install -y ssh netcat git
+RUN apt-get update && apt-get install -y ssh netcat-openbsd git
 RUN pip install pybuilder
 RUN pyb install
 
@@ -26,7 +26,7 @@ FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV GIT_PYTHON_TRACE 1
 WORKDIR /opt/tgsver
-RUN apt-get update && apt-get install -y ssh netcat git gosu vim
+RUN apt-get update && apt-get install -y ssh netcat-openbsd git gosu vim
 COPY tests.json /opt/tgsver/
 COPY --from=build-image /code/target/dist/tgsver-*/dist/tgsver-*.tar.gz /opt/tgsver/
 RUN pip install tgsver-*.tar.gz

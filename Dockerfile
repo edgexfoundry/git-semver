@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM python:3.9-slim AS build-image
+FROM python:3.13.2-slim AS build-image
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV GIT_PYTHON_TRACE 1
 WORKDIR /code
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y ssh netcat git
 RUN pip install pybuilder
 RUN pyb install
 
-FROM python:3.9-slim
+FROM python:3.13.2-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV GIT_PYTHON_TRACE 1
 WORKDIR /opt/pygsver

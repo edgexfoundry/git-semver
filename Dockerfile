@@ -26,7 +26,19 @@ FROM python:3.13-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV GIT_PYTHON_TRACE 1
 WORKDIR /opt/pygsver
-RUN apt-get update && apt-get install -y ssh netcat-traditional git gosu
+RUN apt-get update && apt-get install -y \
+    ssh netcat-traditional curl gosu ca-certificates \
+    libcurl4-gnutls-dev libexpat1-dev gettext \
+    libz-dev libssl-dev make gcc
+
+# Build Git 2.31.1 from source
+RUN curl -LO https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.31.1.tar.gz && \
+    tar -xzf git-2.31.1.tar.gz && \
+    cd git-2.31.1 && \
+    make prefix=/usr/local all && \
+    make prefix=/usr/local install && \
+    cd .. && rm -rf git-2.31.1 git-2.31.1.tar.gz
+
 COPY --from=build-image /code/target/dist/pygsver-*/dist/pygsver-*.tar.gz /opt/pygsver/
 RUN pip install pygsver-*.tar.gz
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
